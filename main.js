@@ -7,6 +7,7 @@ function createMainWindow() {
     height: 600,
     minWidth: 320,
     minHeight: 240,
+    frame: false,
     show: false,
     webPreferences: {
       contextIsolation: true,
