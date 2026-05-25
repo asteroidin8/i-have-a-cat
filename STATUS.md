@@ -12,3 +12,6 @@
 - PR #1 `초기 프로젝트 문서 작성`을 생성했다.
 - PR #1을 스쿼시 병합했다.
 - 다음 단계는 Electron 기본 구조 생성이다.
+- `package.json`을 생성하고 Electron, electron-builder 개발 의존성 선언을 추가했다.
+- `TASKS.md`에서 `package.json 생성`을 완료로 표시했다.
+- 다음 단계는 Electron 진입 파일 생성이다.
