@@ -15,3 +15,5 @@
 - `package.json`을 생성하고 Electron, electron-builder 개발 의존성 선언을 추가했다.
 - `TASKS.md`에서 `package.json 생성`을 완료로 표시했다.
 - 다음 단계는 Electron 진입 파일 생성이다.
+- Prettier, ESLint, Husky를 설치하고 커밋 전 `lint`, `format:check`가 실행되도록 설정했다.
+- 개발 도구 설정 파일과 `package-lock.json`을 추가했다.
