@@ -1,0 +1,12 @@
+{
+  "name": "i-have-a-cat",
+  "version": "0.1.0",
+  "description": "Windows 전용 데스크탑 도트 고양이 앱",
+  "private": true,
+  "main": "main.js",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}
