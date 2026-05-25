@@ -24,3 +24,7 @@
 - 렌더러 기본 파일 `index.html`, `src/renderer.js`, `src/styles/app.css`를 생성했다.
 - `TASKS.md`에서 `렌더러 HTML/CSS/JS 생성`을 완료로 표시했다.
 - 다음 단계는 개발 실행 스크립트 추가이다.
+- `package.json`에 개발 실행 스크립트 `npm start`를 추가했다.
+- `TASKS.md`에서 `개발 실행 스크립트 추가`를 완료로 표시했다.
+- `timeout 8s npm start`로 개발 실행 스크립트 호출을 확인했으며, Electron 프로세스는 제한 시간으로 종료했다.
+- 다음 단계는 프레임 없는 창 구현이다.
