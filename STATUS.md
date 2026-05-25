@@ -21,3 +21,6 @@
 - `TASKS.md`에서 `Electron 진입 파일 생성`을 완료로 표시했다.
 - 다음 단계는 렌더러 HTML/CSS/JS 생성이다.
 - 토큰 절약, 파일 분리, 중복 방지, 하드코딩 최소화, 중앙 시스템 관리 원칙을 `START.md`와 `spec.md`에 반영했다.
+- 렌더러 기본 파일 `index.html`, `src/renderer.js`, `src/styles/app.css`를 생성했다.
+- `TASKS.md`에서 `렌더러 HTML/CSS/JS 생성`을 완료로 표시했다.
+- 다음 단계는 개발 실행 스크립트 추가이다.

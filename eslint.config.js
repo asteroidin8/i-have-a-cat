@@ -11,6 +11,7 @@ module.exports = defineConfig([
       sourceType: "commonjs",
       globals: {
         console: "readonly",
+        document: "readonly",
         process: "readonly",
         __dirname: "readonly",
         require: "readonly",

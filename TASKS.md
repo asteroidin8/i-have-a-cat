@@ -11,7 +11,7 @@
 
 - [x] package.json 생성
 - [x] Electron 진입 파일 생성
-- [ ] 렌더러 HTML/CSS/JS 생성
+- [x] 렌더러 HTML/CSS/JS 생성
 - [ ] 개발 실행 스크립트 추가
 
 ## 2. 투명 창 검증
