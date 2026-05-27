@@ -110,6 +110,32 @@ const CAT_BREEDS = {
   },
 };
 
+const CAT_EYE_COLOR_IDS = {
+  GREEN: "green",
+  GOLD: "gold",
+  BLUE: "blue",
+};
+
+const DEFAULT_EYE_COLOR_ID = CAT_EYE_COLOR_IDS.GREEN;
+
+const CAT_EYE_COLORS = {
+  [CAT_EYE_COLOR_IDS.GREEN]: {
+    id: CAT_EYE_COLOR_IDS.GREEN,
+    name: "초록",
+    value: "#2a9d8f",
+  },
+  [CAT_EYE_COLOR_IDS.GOLD]: {
+    id: CAT_EYE_COLOR_IDS.GOLD,
+    name: "금색",
+    value: "#e9c46a",
+  },
+  [CAT_EYE_COLOR_IDS.BLUE]: {
+    id: CAT_EYE_COLOR_IDS.BLUE,
+    name: "파랑",
+    value: "#457b9d",
+  },
+};
+
 const DEFAULT_PERSONALITY_ID = PERSONALITY_IDS.AFFECTIONATE;
 
 const CAT_PERSONALITIES = {
@@ -208,6 +234,7 @@ const elements = {
   nameInput: document.querySelector("[data-cat-name-input]"),
   nameLabel: document.querySelector("[data-cat-name-label]"),
   breedSelect: document.querySelector("[data-cat-breed-select]"),
+  eyeColorSelect: document.querySelector("[data-cat-eye-color-select]"),
 };
 
 let isIgnoringMouseEvents = true;
@@ -244,6 +271,7 @@ const pettingState = {
 };
 const catProfile = {
   breedId: DEFAULT_BREED_ID,
+  eyeColorId: DEFAULT_EYE_COLOR_ID,
   name: CAT_PROFILE_CONFIG.DEFAULT_NAME,
   personalityId: DEFAULT_PERSONALITY_ID,
 };
@@ -285,6 +313,13 @@ function setCatBreed(breedId) {
   catProfile.breedId = CAT_BREEDS[breedId] ? breedId : DEFAULT_BREED_ID;
   elements.cat.dataset.catBreed = catProfile.breedId;
   elements.breedSelect.value = catProfile.breedId;
+}
+
+function setCatEyeColor(eyeColorId) {
+  catProfile.eyeColorId = CAT_EYE_COLORS[eyeColorId] ? eyeColorId : DEFAULT_EYE_COLOR_ID;
+  elements.cat.dataset.catEyeColor = catProfile.eyeColorId;
+  elements.cat.style.setProperty("--cat-eye", CAT_EYE_COLORS[catProfile.eyeColorId].value);
+  elements.eyeColorSelect.value = catProfile.eyeColorId;
 }
 
 function getActivePersonality() {
@@ -344,6 +379,7 @@ function setInitialState() {
   elements.app.dataset.appState = APP_STATES.IDLE;
   setCatName(catProfile.name);
   setCatBreed(catProfile.breedId);
+  setCatEyeColor(catProfile.eyeColorId);
   setCatState(CAT_STATES.IDLE);
   setCatDirection(CAT_DIRECTIONS.RIGHT);
   setCatPersonality(catProfile.personalityId);
@@ -952,6 +988,10 @@ function registerNameControls() {
 
   elements.breedSelect.addEventListener("change", (event) => {
     setCatBreed(event.target.value);
+  });
+
+  elements.eyeColorSelect.addEventListener("change", (event) => {
+    setCatEyeColor(event.target.value);
   });
 }
 
