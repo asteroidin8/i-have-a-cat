@@ -40,6 +40,8 @@ body {
   left: 12px;
   top: 12px;
   z-index: 2;
+  display: flex;
+  gap: 8px;
   margin: 0;
 }
 
@@ -135,6 +137,24 @@ body {
 
 .cat[data-cat-direction="left"] .cat__sprite {
   transform: scaleX(-1);
+}
+
+.cat[data-cat-breed="fold"] .cat__ear {
+  top: -10px;
+  height: 12px;
+}
+
+.cat[data-cat-breed="fold"] .cat__ear--left {
+  transform: skewX(18deg);
+}
+
+.cat[data-cat-breed="fold"] .cat__ear--right {
+  transform: skewX(-18deg);
+}
+
+.cat[data-cat-breed="bobtail"] .cat__tail {
+  right: -14px;
+  width: 14px;
 }
 
 .cat[data-cat-pointer-state="hover"] {
