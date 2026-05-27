@@ -7,53 +7,83 @@
     <link rel="stylesheet" href="./src/styles/app.css" />
   </head>
   <body>
-    <main class="app" data-app-state="idle">
-      <form class="cat-controls" aria-label="고양이 설정">
-        <label class="cat-name-field">
-          <span class="cat-name-field__label">이름</span>
-          <input
-            class="cat-name-field__input"
-            data-cat-name-input
-            type="text"
-            maxlength="16"
-            autocomplete="off"
-          />
-        </label>
-        <label class="cat-name-field">
-          <span class="cat-name-field__label">품종</span>
-          <select class="cat-name-field__input" data-cat-breed-select>
-            <option value="domestic">코리안 숏헤어</option>
-            <option value="fold">폴드</option>
-            <option value="bobtail">짧은 꼬리</option>
-          </select>
-        </label>
-        <label class="cat-name-field">
-          <span class="cat-name-field__label">눈</span>
-          <select class="cat-name-field__input" data-cat-eye-color-select>
-            <option value="green">초록</option>
-            <option value="gold">금색</option>
-            <option value="blue">파랑</option>
-          </select>
-        </label>
-        <label class="cat-name-field">
-          <span class="cat-name-field__label">털</span>
-          <select class="cat-name-field__input" data-cat-fur-color-select>
-            <option value="orange">주황</option>
-            <option value="gray">회색</option>
-            <option value="cream">크림</option>
-          </select>
-        </label>
-        <label class="cat-name-field">
-          <span class="cat-name-field__label">성격</span>
-          <select class="cat-name-field__input" data-cat-personality-select>
-            <option value="affectionate">애교쟁이</option>
-            <option value="coy">새침이</option>
-            <option value="timid">겁쟁이</option>
-            <option value="relaxed">느긋이</option>
-            <option value="playful">장난꾸러기</option>
-          </select>
-        </label>
-      </form>
+    <main class="app" data-app-state="setup">
+      <div class="window-toolbar" data-window-toolbar>
+        <span class="window-toolbar__drag">나도 고양이 있어</span>
+        <button class="window-toolbar__button" data-settings-button type="button">설정</button>
+      </div>
+      <section class="setup-panel" data-setup-panel aria-label="시작 설정">
+        <form class="cat-controls" aria-label="고양이 설정">
+          <strong class="cat-controls__title">고양이 설정</strong>
+          <p class="cat-controls__summary">
+            이름과 외형, 성격을 정하면 설정대로 고양이가 나타납니다.
+          </p>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">이름</span>
+            <input
+              class="cat-name-field__input"
+              data-cat-name-input
+              type="text"
+              maxlength="16"
+              autocomplete="off"
+            />
+          </label>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">품종</span>
+            <select class="cat-name-field__input" data-cat-breed-select>
+              <option value="domestic">코리안 숏헤어</option>
+              <option value="fold">폴드</option>
+              <option value="bobtail">짧은 꼬리</option>
+            </select>
+          </label>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">눈</span>
+            <select class="cat-name-field__input" data-cat-eye-color-select>
+              <option value="green">초록</option>
+              <option value="gold">금색</option>
+              <option value="blue">파랑</option>
+            </select>
+          </label>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">털</span>
+            <select class="cat-name-field__input" data-cat-fur-color-select>
+              <option value="orange">주황</option>
+              <option value="gray">회색</option>
+              <option value="cream">크림</option>
+            </select>
+          </label>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">성격</span>
+            <select class="cat-name-field__input" data-cat-personality-select>
+              <option value="affectionate">애교쟁이</option>
+              <option value="coy">새침이</option>
+              <option value="timid">겁쟁이</option>
+              <option value="relaxed">느긋이</option>
+              <option value="playful">장난꾸러기</option>
+            </select>
+          </label>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">소리</span>
+            <input class="cat-name-field__checkbox" data-sound-toggle type="checkbox" />
+          </label>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">볼륨</span>
+            <input
+              class="cat-name-field__input"
+              data-volume-input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+            />
+          </label>
+          <label class="cat-name-field">
+            <span class="cat-name-field__label">시작 실행</span>
+            <input class="cat-name-field__checkbox" data-start-at-login-toggle type="checkbox" />
+          </label>
+          <button class="cat-controls__submit" data-setup-submit type="submit">완료</button>
+        </form>
+      </section>
       <div class="cat-stage" aria-label="고양이 영역">
         <div
           class="cat"
@@ -69,12 +99,24 @@
         >
           <span class="cat__name" data-cat-name-label>고양이</span>
           <span class="cat__sprite">
+            <span class="cat__pixel cat__pixel--outline"></span>
+            <span class="cat__pixel cat__pixel--fur"></span>
+            <span class="cat__pixel cat__pixel--shadow"></span>
+            <span class="cat__pixel cat__pixel--cream"></span>
+            <span class="cat__pixel cat__pixel--eye"></span>
+            <span class="cat__pixel cat__pixel--nose"></span>
             <span class="cat__ear cat__ear--left"></span>
             <span class="cat__ear cat__ear--right"></span>
+            <span class="cat__body"></span>
+            <span class="cat__chest"></span>
             <span class="cat__face">
               <span class="cat__eye cat__eye--left"></span>
               <span class="cat__eye cat__eye--right"></span>
               <span class="cat__nose"></span>
+              <span class="cat__muzzle cat__muzzle--left"></span>
+              <span class="cat__muzzle cat__muzzle--right"></span>
+              <span class="cat__whisker cat__whisker--left"></span>
+              <span class="cat__whisker cat__whisker--right"></span>
             </span>
             <span class="cat__tail"></span>
             <span class="cat__paw cat__paw--front"></span>
@@ -82,6 +124,12 @@
           </span>
         </div>
       </div>
+      <button
+        class="window-resize"
+        data-window-resize
+        type="button"
+        aria-label="창 크기 조절"
+      ></button>
     </main>
     <script src="./src/renderer.js"></script>
   </body>

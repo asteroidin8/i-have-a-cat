@@ -1,7 +1,11 @@
 const path = require("node:path");
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, Menu, Tray, ipcMain, nativeImage } = require("electron");
 
 const MOUSE_EVENTS_CHANNEL = "window:set-ignore-mouse-events";
+const START_AT_LOGIN_CHANNEL = "app:set-start-at-login";
+const WINDOW_SIZE_CHANNEL = "window:set-size";
+
+let tray = null;
 
 function registerWindowEventHandlers(mainWindow) {
   ipcMain.on(MOUSE_EVENTS_CHANNEL, (event, shouldIgnore) => {
@@ -10,6 +14,32 @@ function registerWindowEventHandlers(mainWindow) {
     }
 
     mainWindow.setIgnoreMouseEvents(shouldIgnore, { forward: shouldIgnore });
+  });
+
+  ipcMain.on(WINDOW_SIZE_CHANNEL, (event, size) => {
+    if (
+      event.sender !== mainWindow.webContents ||
+      typeof size?.width !== "number" ||
+      typeof size?.height !== "number"
+    ) {
+      return;
+    }
+
+    mainWindow.setSize(
+      Math.max(Math.round(size.width), 320),
+      Math.max(Math.round(size.height), 240)
+    );
+  });
+
+  ipcMain.on(START_AT_LOGIN_CHANNEL, (event, shouldOpenAtLogin) => {
+    if (event.sender !== mainWindow.webContents || typeof shouldOpenAtLogin !== "boolean") {
+      return;
+    }
+
+    app.setLoginItemSettings({
+      openAtLogin: shouldOpenAtLogin,
+      openAsHidden: false,
+    });
   });
 }
 
@@ -24,6 +54,7 @@ function createMainWindow() {
     transparent: true,
     backgroundColor: "#00000000",
     alwaysOnTop: true,
+    icon: path.join(__dirname, "src", "assets", "app-icon.svg"),
     show: false,
     webPreferences: {
       contextIsolation: true,
@@ -39,10 +70,46 @@ function createMainWindow() {
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
   });
+
+  return mainWindow;
+}
+
+function createTray(mainWindow) {
+  try {
+    const icon = nativeImage.createFromPath(path.join(__dirname, "src", "assets", "app-icon.svg"));
+
+    tray = new Tray(icon);
+    tray.setToolTip("나도 고양이 있어");
+    tray.setContextMenu(
+      Menu.buildFromTemplate([
+        {
+          label: "보이기",
+          click() {
+            mainWindow.show();
+          },
+        },
+        {
+          label: "숨기기",
+          click() {
+            mainWindow.hide();
+          },
+        },
+        {
+          label: "종료",
+          click() {
+            app.quit();
+          },
+        },
+      ])
+    );
+  } catch {
+    tray = null;
+  }
 }
 
 app.whenReady().then(() => {
-  createMainWindow();
+  const mainWindow = createMainWindow();
+  createTray(mainWindow);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

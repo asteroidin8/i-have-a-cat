@@ -2,15 +2,48 @@
   "name": "i-have-a-cat",
   "version": "0.1.0",
   "description": "Windows 전용 데스크탑 도트 고양이 앱",
+  "author": "asteroidin8",
   "private": true,
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
+    "build:win": "electron-builder --win",
     "start": "electron .",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "pack": "electron-builder --dir",
     "prepare": "husky"
+  },
+  "build": {
+    "appId": "com.asteroidin8.i-have-a-cat",
+    "productName": "나도 고양이 있어",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "main.js",
+      "package.json",
+      "src/**/*"
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "devDependencies": {
     "electron": "^32.0.0",
