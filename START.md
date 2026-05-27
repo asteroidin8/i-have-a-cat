@@ -24,6 +24,15 @@
 4. 고양이 이동 로직 구현
 5. 마우스 접근과 쓰다듬기 판정 구현
 
+## 빌드 방법
+
+- 개발 실행: `npm start`
+- 현재 플랫폼용 unpacked 앱 생성: `npm run pack`
+- Windows 설치 파일 생성: `npm run build:win`
+- Linux/WSL에서 Windows unpacked 실행 파일만 생성: `npx electron-builder --win dir`
+
+빌드 결과물은 `dist/`에 생성한다. Windows 실행 파일은 실제 Windows 환경에서 최종 검증한다.
+
 ## 개발 원칙
 
 - MVP 범위를 넘는 기능은 추가하지 않는다.
