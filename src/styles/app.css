@@ -81,6 +81,10 @@ body {
   -webkit-app-region: no-drag;
 }
 
+.app[data-app-state="companion"] .window-toolbar {
+  display: none;
+}
+
 .cat-controls {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
