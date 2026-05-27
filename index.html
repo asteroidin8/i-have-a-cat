@@ -8,8 +8,41 @@
   </head>
   <body>
     <main class="app" data-app-state="idle">
+      <form class="cat-controls" aria-label="고양이 설정">
+        <label class="cat-name-field">
+          <span class="cat-name-field__label">이름</span>
+          <input
+            class="cat-name-field__input"
+            data-cat-name-input
+            type="text"
+            maxlength="16"
+            autocomplete="off"
+          />
+        </label>
+      </form>
       <div class="cat-stage" aria-label="고양이 영역">
-        <div class="cat" data-cat-state="idle" aria-label="고양이"></div>
+        <div
+          class="cat"
+          data-cat-state="idle"
+          data-cat-direction="right"
+          data-cat-pointer-state="outside"
+          data-cat-name="고양이"
+          aria-label="고양이"
+        >
+          <span class="cat__name" data-cat-name-label>고양이</span>
+          <span class="cat__sprite">
+            <span class="cat__ear cat__ear--left"></span>
+            <span class="cat__ear cat__ear--right"></span>
+            <span class="cat__face">
+              <span class="cat__eye cat__eye--left"></span>
+              <span class="cat__eye cat__eye--right"></span>
+              <span class="cat__nose"></span>
+            </span>
+            <span class="cat__tail"></span>
+            <span class="cat__paw cat__paw--front"></span>
+            <span class="cat__paw cat__paw--back"></span>
+          </span>
+        </div>
       </div>
     </main>
     <script src="./src/renderer.js"></script>

@@ -3,7 +3,17 @@
   --cat-fur: #f4a261;
   --cat-ear: #e76f51;
   --cat-eye: #2a9d8f;
+  --cat-line: #1f1f1f;
+  --cat-shadow: #c96f3f;
+  --cat-nose: #f7cad0;
   --stage-outline: rgba(38, 70, 83, 0.24);
+  --control-surface: rgba(255, 255, 255, 0.86);
+  --control-border: rgba(31, 31, 31, 0.28);
+  --idle-duration: 2.4s;
+  --rub-duration: 0.7s;
+  --run-duration: 0.36s;
+  --startled-duration: 0.28s;
+  --walk-duration: 0.64s;
 }
 
 * {
@@ -16,12 +26,57 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: #f7f7f2;
+  background: transparent;
 }
 
 .app {
+  position: relative;
   width: 100%;
   height: 100%;
+}
+
+.cat-controls {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 2;
+  margin: 0;
+}
+
+.cat-name-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--control-surface);
+  border: 1px solid var(--control-border);
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-size: 13px;
+  color: var(--cat-line);
+}
+
+.cat-name-field__label {
+  font-weight: 700;
+}
+
+.cat-name-field__input {
+  width: 120px;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid var(--control-border);
+  font: inherit;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.cat-name-field__input:focus {
+  outline: 2px solid var(--cat-eye);
+  outline-offset: 1px;
 }
 
 .cat-stage {
@@ -36,29 +91,360 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 48px;
-  height: 32px;
-  background: var(--cat-fur);
-  border: 3px solid #1f1f1f;
+  width: 72px;
+  height: 48px;
   transform: translate(-50%, -50%);
+  transition:
+    left 1.2s steps(12, end),
+    top 1.2s steps(12, end);
   image-rendering: pixelated;
 }
 
-.cat::before,
-.cat::after {
+.cat__sprite {
   position: absolute;
-  top: -14px;
-  width: 14px;
-  height: 14px;
+  left: 0;
+  top: 0;
+  width: 72px;
+  height: 48px;
+  background: var(--cat-fur);
+  border: 4px solid var(--cat-line);
+  transform-origin: center;
+}
+
+.cat__name {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 20px);
+  max-width: 140px;
+  padding: 3px 6px;
+  overflow: hidden;
+  color: var(--cat-line);
+  font:
+    700 12px/1.2 system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--control-surface);
+  border: 1px solid var(--control-border);
+  transform: translateX(-50%);
+}
+
+.cat[data-cat-direction="left"] .cat__sprite {
+  transform: scaleX(-1);
+}
+
+.cat[data-cat-pointer-state="hover"] {
+  outline: 2px solid var(--cat-eye);
+}
+
+.cat[data-cat-pointer-state="press"] {
+  outline: 2px solid var(--cat-line);
+}
+
+.cat[data-cat-state="idle"] {
+  animation: cat-idle-breathe var(--idle-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="idle"] .cat__eye {
+  animation: cat-idle-blink 4.8s steps(1, end) infinite;
+}
+
+.cat[data-cat-state="idle"] .cat__tail {
+  animation: cat-idle-tail 3.2s steps(2, end) infinite;
+}
+
+.cat[data-cat-state="walk"] {
+  animation: cat-walk-body var(--walk-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="walk"] .cat__tail {
+  animation: cat-walk-tail var(--walk-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="walk"] .cat__paw--front {
+  animation: cat-walk-front-paw var(--walk-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="walk"] .cat__paw--back {
+  animation: cat-walk-back-paw var(--walk-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="rub"] {
+  animation: cat-rub-body var(--rub-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="rub"] .cat__tail {
+  animation: cat-rub-tail var(--rub-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="rub"] .cat__eye {
+  height: 2px;
+  top: 4px;
+}
+
+.cat[data-cat-state="sleep"] .cat__sprite {
+  transform: translateY(4px);
+}
+
+.cat[data-cat-direction="left"][data-cat-state="sleep"] .cat__sprite {
+  transform: scaleX(-1) translateY(4px);
+}
+
+.cat[data-cat-state="sleep"] .cat__eye {
+  height: 2px;
+  top: 4px;
+}
+
+.cat[data-cat-state="sleep"] .cat__tail {
+  transform: translateY(4px);
+}
+
+.cat[data-cat-state="startled"] {
+  animation: cat-startled-body var(--startled-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="startled"] .cat__eye {
+  height: 10px;
+  top: -1px;
+}
+
+.cat[data-cat-state="run"] {
+  animation: cat-run-body var(--run-duration) steps(2, end) infinite;
+  transition:
+    left 0.7s steps(8, end),
+    top 0.7s steps(8, end);
+}
+
+.cat[data-cat-state="run"] .cat__tail {
+  animation: cat-run-tail var(--run-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="run"] .cat__paw--front {
+  animation: cat-walk-front-paw var(--run-duration) steps(2, end) infinite;
+}
+
+.cat[data-cat-state="run"] .cat__paw--back {
+  animation: cat-walk-back-paw var(--run-duration) steps(2, end) infinite;
+}
+
+.cat__sprite,
+.cat__ear,
+.cat__face,
+.cat__eye,
+.cat__nose,
+.cat__tail,
+.cat__paw {
+  position: absolute;
+  display: block;
+}
+
+.cat__ear {
+  top: -18px;
+  width: 18px;
+  height: 18px;
   background: var(--cat-ear);
-  border: 3px solid #1f1f1f;
-  content: "";
+  border: 4px solid var(--cat-line);
 }
 
-.cat::before {
-  left: 4px;
+.cat__ear--left {
+  left: 6px;
 }
 
-.cat::after {
-  right: 4px;
+.cat__ear--right {
+  right: 6px;
+}
+
+.cat__face {
+  left: 12px;
+  top: 12px;
+  width: 36px;
+  height: 18px;
+}
+
+.cat__eye {
+  top: 0;
+  width: 6px;
+  height: 8px;
+  background: var(--cat-eye);
+  border: 2px solid var(--cat-line);
+}
+
+.cat__eye--left {
+  left: 0;
+}
+
+.cat__eye--right {
+  right: 0;
+}
+
+.cat__nose {
+  left: 15px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  background: var(--cat-nose);
+}
+
+.cat__tail {
+  right: -24px;
+  top: 12px;
+  width: 24px;
+  height: 12px;
+  background: var(--cat-fur);
+  border: 4px solid var(--cat-line);
+}
+
+.cat__paw {
+  bottom: -8px;
+  width: 14px;
+  height: 8px;
+  background: var(--cat-shadow);
+  border: 3px solid var(--cat-line);
+}
+
+.cat__paw--front {
+  left: 12px;
+}
+
+.cat__paw--back {
+  right: 12px;
+}
+
+@keyframes cat-idle-breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 2px));
+  }
+}
+
+@keyframes cat-idle-blink {
+  0%,
+  88%,
+  100% {
+    height: 8px;
+    top: 0;
+  }
+
+  92% {
+    height: 2px;
+    top: 4px;
+  }
+}
+
+@keyframes cat-idle-tail {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes cat-walk-body {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+
+  50% {
+    transform: translate(calc(-50% + 2px), calc(-50% - 2px));
+  }
+}
+
+@keyframes cat-walk-tail {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+@keyframes cat-walk-front-paw {
+  0%,
+  100% {
+    transform: translateX(-4px);
+  }
+
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes cat-walk-back-paw {
+  0%,
+  100% {
+    transform: translateX(4px);
+  }
+
+  50% {
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes cat-rub-body {
+  0%,
+  100% {
+    transform: translate(calc(-50% - 2px), -50%);
+  }
+
+  50% {
+    transform: translate(calc(-50% + 2px), calc(-50% - 2px));
+  }
+}
+
+@keyframes cat-rub-tail {
+  0%,
+  100% {
+    transform: translateY(-4px);
+  }
+
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes cat-startled-body {
+  0%,
+  100% {
+    transform: translate(-50%, calc(-50% - 4px));
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 8px));
+  }
+}
+
+@keyframes cat-run-body {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+
+  50% {
+    transform: translate(calc(-50% + 4px), calc(-50% - 2px));
+  }
+}
+
+@keyframes cat-run-tail {
+  0%,
+  100% {
+    transform: translateY(-6px);
+  }
+
+  50% {
+    transform: translateY(2px);
+  }
 }
