@@ -87,6 +87,29 @@ const CAT_PROFILE_CONFIG = {
   MAX_NAME_LENGTH: 16,
 };
 
+const CAT_BREED_IDS = {
+  DOMESTIC: "domestic",
+  FOLD: "fold",
+  BOBTAIL: "bobtail",
+};
+
+const DEFAULT_BREED_ID = CAT_BREED_IDS.DOMESTIC;
+
+const CAT_BREEDS = {
+  [CAT_BREED_IDS.DOMESTIC]: {
+    id: CAT_BREED_IDS.DOMESTIC,
+    name: "코리안 숏헤어",
+  },
+  [CAT_BREED_IDS.FOLD]: {
+    id: CAT_BREED_IDS.FOLD,
+    name: "폴드",
+  },
+  [CAT_BREED_IDS.BOBTAIL]: {
+    id: CAT_BREED_IDS.BOBTAIL,
+    name: "짧은 꼬리",
+  },
+};
+
 const DEFAULT_PERSONALITY_ID = PERSONALITY_IDS.AFFECTIONATE;
 
 const CAT_PERSONALITIES = {
@@ -184,6 +207,7 @@ const elements = {
   controls: document.querySelector(".cat-controls"),
   nameInput: document.querySelector("[data-cat-name-input]"),
   nameLabel: document.querySelector("[data-cat-name-label]"),
+  breedSelect: document.querySelector("[data-cat-breed-select]"),
 };
 
 let isIgnoringMouseEvents = true;
@@ -219,6 +243,7 @@ const pettingState = {
   totalDragDistance: 0,
 };
 const catProfile = {
+  breedId: DEFAULT_BREED_ID,
   name: CAT_PROFILE_CONFIG.DEFAULT_NAME,
   personalityId: DEFAULT_PERSONALITY_ID,
 };
@@ -254,6 +279,12 @@ function setCatName(name, { syncInput = true } = {}) {
   if (syncInput) {
     elements.nameInput.value = catProfile.name;
   }
+}
+
+function setCatBreed(breedId) {
+  catProfile.breedId = CAT_BREEDS[breedId] ? breedId : DEFAULT_BREED_ID;
+  elements.cat.dataset.catBreed = catProfile.breedId;
+  elements.breedSelect.value = catProfile.breedId;
 }
 
 function getActivePersonality() {
@@ -312,6 +343,7 @@ function setCatPosition(position) {
 function setInitialState() {
   elements.app.dataset.appState = APP_STATES.IDLE;
   setCatName(catProfile.name);
+  setCatBreed(catProfile.breedId);
   setCatState(CAT_STATES.IDLE);
   setCatDirection(CAT_DIRECTIONS.RIGHT);
   setCatPersonality(catProfile.personalityId);
@@ -916,6 +948,10 @@ function registerNameControls() {
 
   elements.nameInput.addEventListener("blur", () => {
     setCatName(elements.nameInput.value);
+  });
+
+  elements.breedSelect.addEventListener("change", (event) => {
+    setCatBreed(event.target.value);
   });
 }
 

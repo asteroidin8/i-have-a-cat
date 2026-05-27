@@ -19,6 +19,14 @@
             autocomplete="off"
           />
         </label>
+        <label class="cat-name-field">
+          <span class="cat-name-field__label">품종</span>
+          <select class="cat-name-field__input" data-cat-breed-select>
+            <option value="domestic">코리안 숏헤어</option>
+            <option value="fold">폴드</option>
+            <option value="bobtail">짧은 꼬리</option>
+          </select>
+        </label>
       </form>
       <div class="cat-stage" aria-label="고양이 영역">
         <div
@@ -27,6 +35,7 @@
           data-cat-direction="right"
           data-cat-pointer-state="outside"
           data-cat-name="고양이"
+          data-cat-breed="domestic"
           aria-label="고양이"
         >
           <span class="cat__name" data-cat-name-label>고양이</span>
