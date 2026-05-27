@@ -215,6 +215,10 @@ body {
   cursor: nwse-resize;
 }
 
+.app[data-app-state="companion"] .window-resize {
+  display: none;
+}
+
 .cat {
   position: absolute;
   left: 50%;
