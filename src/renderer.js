@@ -136,6 +136,38 @@ const CAT_EYE_COLORS = {
   },
 };
 
+const CAT_FUR_COLOR_IDS = {
+  ORANGE: "orange",
+  GRAY: "gray",
+  CREAM: "cream",
+};
+
+const DEFAULT_FUR_COLOR_ID = CAT_FUR_COLOR_IDS.ORANGE;
+
+const CAT_FUR_COLORS = {
+  [CAT_FUR_COLOR_IDS.ORANGE]: {
+    id: CAT_FUR_COLOR_IDS.ORANGE,
+    name: "주황",
+    fur: "#f4a261",
+    ear: "#e76f51",
+    shadow: "#c96f3f",
+  },
+  [CAT_FUR_COLOR_IDS.GRAY]: {
+    id: CAT_FUR_COLOR_IDS.GRAY,
+    name: "회색",
+    fur: "#adb5bd",
+    ear: "#6c757d",
+    shadow: "#868e96",
+  },
+  [CAT_FUR_COLOR_IDS.CREAM]: {
+    id: CAT_FUR_COLOR_IDS.CREAM,
+    name: "크림",
+    fur: "#f1dca7",
+    ear: "#d9a76c",
+    shadow: "#c6a15b",
+  },
+};
+
 const DEFAULT_PERSONALITY_ID = PERSONALITY_IDS.AFFECTIONATE;
 
 const CAT_PERSONALITIES = {
@@ -235,6 +267,7 @@ const elements = {
   nameLabel: document.querySelector("[data-cat-name-label]"),
   breedSelect: document.querySelector("[data-cat-breed-select]"),
   eyeColorSelect: document.querySelector("[data-cat-eye-color-select]"),
+  furColorSelect: document.querySelector("[data-cat-fur-color-select]"),
 };
 
 let isIgnoringMouseEvents = true;
@@ -272,6 +305,7 @@ const pettingState = {
 const catProfile = {
   breedId: DEFAULT_BREED_ID,
   eyeColorId: DEFAULT_EYE_COLOR_ID,
+  furColorId: DEFAULT_FUR_COLOR_ID,
   name: CAT_PROFILE_CONFIG.DEFAULT_NAME,
   personalityId: DEFAULT_PERSONALITY_ID,
 };
@@ -320,6 +354,15 @@ function setCatEyeColor(eyeColorId) {
   elements.cat.dataset.catEyeColor = catProfile.eyeColorId;
   elements.cat.style.setProperty("--cat-eye", CAT_EYE_COLORS[catProfile.eyeColorId].value);
   elements.eyeColorSelect.value = catProfile.eyeColorId;
+}
+
+function setCatFurColor(furColorId) {
+  catProfile.furColorId = CAT_FUR_COLORS[furColorId] ? furColorId : DEFAULT_FUR_COLOR_ID;
+  elements.cat.dataset.catFurColor = catProfile.furColorId;
+  elements.cat.style.setProperty("--cat-fur", CAT_FUR_COLORS[catProfile.furColorId].fur);
+  elements.cat.style.setProperty("--cat-ear", CAT_FUR_COLORS[catProfile.furColorId].ear);
+  elements.cat.style.setProperty("--cat-shadow", CAT_FUR_COLORS[catProfile.furColorId].shadow);
+  elements.furColorSelect.value = catProfile.furColorId;
 }
 
 function getActivePersonality() {
@@ -380,6 +423,7 @@ function setInitialState() {
   setCatName(catProfile.name);
   setCatBreed(catProfile.breedId);
   setCatEyeColor(catProfile.eyeColorId);
+  setCatFurColor(catProfile.furColorId);
   setCatState(CAT_STATES.IDLE);
   setCatDirection(CAT_DIRECTIONS.RIGHT);
   setCatPersonality(catProfile.personalityId);
@@ -992,6 +1036,10 @@ function registerNameControls() {
 
   elements.eyeColorSelect.addEventListener("change", (event) => {
     setCatEyeColor(event.target.value);
+  });
+
+  elements.furColorSelect.addEventListener("change", (event) => {
+    setCatFurColor(event.target.value);
   });
 }
 

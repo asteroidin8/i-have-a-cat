@@ -85,6 +85,10 @@ body {
   width: 86px;
 }
 
+.cat-name-field__input[data-cat-fur-color-select] {
+  width: 86px;
+}
+
 .cat-stage {
   position: relative;
   width: 100%;
