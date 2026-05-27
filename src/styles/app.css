@@ -7,7 +7,6 @@
   --cat-shadow: #c96f3f;
   --cat-cream: #ffe8b6;
   --cat-nose: #f7cad0;
-  --stage-outline: rgba(18, 24, 22, 0.2);
   --control-surface: rgba(250, 247, 233, 0.96);
   --control-border: rgba(31, 31, 31, 0.36);
   --panel-shadow: rgba(31, 31, 31, 0.2);
@@ -100,7 +99,7 @@ body {
   z-index: 3;
   display: grid;
   place-items: center;
-  background: rgba(21, 26, 24, 0.12);
+  background: transparent;
 }
 
 .app[data-app-state="companion"] .setup-panel {
@@ -201,8 +200,6 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
-  outline: 1px dashed var(--stage-outline);
-  outline-offset: -1px;
 }
 
 .window-resize {
