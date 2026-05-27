@@ -2,6 +2,7 @@ const path = require("node:path");
 const { app, BrowserWindow, Menu, Tray, ipcMain, nativeImage } = require("electron");
 
 const MOUSE_EVENTS_CHANNEL = "window:set-ignore-mouse-events";
+const OPEN_SETTINGS_CHANNEL = "app:open-settings";
 const START_AT_LOGIN_CHANNEL = "app:set-start-at-login";
 const WINDOW_SIZE_CHANNEL = "window:set-size";
 
@@ -86,6 +87,13 @@ function createTray(mainWindow) {
           label: "보이기",
           click() {
             mainWindow.show();
+          },
+        },
+        {
+          label: "설정",
+          click() {
+            mainWindow.show();
+            mainWindow.webContents.send(OPEN_SETTINGS_CHANNEL);
           },
         },
         {

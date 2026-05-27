@@ -1424,6 +1424,10 @@ function registerSetupControls() {
   elements.settingsButton.addEventListener("click", () => {
     setAppState(APP_STATES.SETUP);
   });
+
+  window.catWindow.onOpenSettings(() => {
+    setAppState(APP_STATES.SETUP);
+  });
 }
 
 function startWindowResize(event) {
