@@ -89,6 +89,10 @@ body {
   width: 86px;
 }
 
+.cat-name-field__input[data-cat-personality-select] {
+  width: 112px;
+}
+
 .cat-stage {
   position: relative;
   width: 100%;
