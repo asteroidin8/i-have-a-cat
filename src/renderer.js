@@ -268,6 +268,7 @@ const elements = {
   breedSelect: document.querySelector("[data-cat-breed-select]"),
   eyeColorSelect: document.querySelector("[data-cat-eye-color-select]"),
   furColorSelect: document.querySelector("[data-cat-fur-color-select]"),
+  personalitySelect: document.querySelector("[data-cat-personality-select]"),
 };
 
 let isIgnoringMouseEvents = true;
@@ -386,6 +387,7 @@ function setCatPersonality(personalityId) {
     ? personalityId
     : DEFAULT_PERSONALITY_ID;
   elements.cat.dataset.catPersonality = getActivePersonality().id;
+  elements.personalitySelect.value = getActivePersonality().id;
 }
 
 function getMovementBounds() {
@@ -1040,6 +1042,10 @@ function registerNameControls() {
 
   elements.furColorSelect.addEventListener("change", (event) => {
     setCatFurColor(event.target.value);
+  });
+
+  elements.personalitySelect.addEventListener("change", (event) => {
+    setCatPersonality(event.target.value);
   });
 }
 
