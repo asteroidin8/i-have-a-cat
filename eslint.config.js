@@ -12,6 +12,7 @@ module.exports = defineConfig([
       globals: {
         console: "readonly",
         document: "readonly",
+        window: "readonly",
         process: "readonly",
         __dirname: "readonly",
         require: "readonly",
