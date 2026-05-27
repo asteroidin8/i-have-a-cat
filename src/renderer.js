@@ -1,5 +1,6 @@
 const APP_STATES = {
-  IDLE: "idle",
+  COMPANION: "companion",
+  SETUP: "setup",
 };
 
 const CAT_STATES = {
@@ -15,6 +16,15 @@ const CAT_POINTER_STATES = {
   OUTSIDE: "outside",
   HOVER: "hover",
   PRESS: "press",
+};
+
+const IDLE_ACTION_IDS = {
+  CURL: "curl",
+  GROOM: "groom",
+  LOOK: "look",
+  SCRATCH: "scratch",
+  SIT: "sit",
+  TAIL: "tail",
 };
 
 const CAT_DIRECTIONS = {
@@ -33,6 +43,7 @@ const PERSONALITY_IDS = {
 const MOVEMENT_CONFIG = {
   INTERVAL_MS: 4000,
   TRANSITION_MS: 1200,
+  TURN_FRAME_MS: 180,
 };
 
 const PETTING_CONFIG = {
@@ -82,9 +93,37 @@ const PLAYFUL_CONFIG = {
   IDLE_HOP_DURATION_MS: 420,
 };
 
+const IDLE_BEHAVIOR_CONFIG = {
+  COOLDOWN_MS: 1800,
+  LONG_IDLE_SLEEP_MS: 1000 * 60 * 8,
+  TABLE: [
+    { id: IDLE_ACTION_IDS.SIT, state: CAT_STATES.IDLE, weight: 1.6 },
+    { id: IDLE_ACTION_IDS.CURL, state: CAT_STATES.SLEEP, weight: 0.7 },
+    { id: IDLE_ACTION_IDS.LOOK, state: CAT_STATES.IDLE, weight: 1.1 },
+    { id: IDLE_ACTION_IDS.SCRATCH, state: CAT_STATES.IDLE, weight: 0.55 },
+    { id: IDLE_ACTION_IDS.GROOM, state: CAT_STATES.IDLE, weight: 0.65 },
+    { id: IDLE_ACTION_IDS.TAIL, state: CAT_STATES.IDLE, weight: 1 },
+  ],
+};
+
+const SOUND_CONFIG = {
+  DEFAULT_ENABLED: false,
+  DEFAULT_VOLUME: 0.25,
+  MAX_VOLUME: 1,
+  MIN_VOLUME: 0,
+};
+
+const PERFORMANCE_CONFIG = {
+  SAMPLE_INTERVAL_MS: 15000,
+};
+
 const CAT_PROFILE_CONFIG = {
   DEFAULT_NAME: "고양이",
   MAX_NAME_LENGTH: 16,
+};
+
+const STORAGE_CONFIG = {
+  PROFILE_KEY: "i-have-a-cat:cat-profile",
 };
 
 const CAT_BREED_IDS = {
@@ -148,6 +187,7 @@ const CAT_FUR_COLORS = {
   [CAT_FUR_COLOR_IDS.ORANGE]: {
     id: CAT_FUR_COLOR_IDS.ORANGE,
     name: "주황",
+    cream: "#ffe8b6",
     fur: "#f4a261",
     ear: "#e76f51",
     shadow: "#c96f3f",
@@ -155,6 +195,7 @@ const CAT_FUR_COLORS = {
   [CAT_FUR_COLOR_IDS.GRAY]: {
     id: CAT_FUR_COLOR_IDS.GRAY,
     name: "회색",
+    cream: "#e9ecef",
     fur: "#adb5bd",
     ear: "#6c757d",
     shadow: "#868e96",
@@ -162,6 +203,7 @@ const CAT_FUR_COLORS = {
   [CAT_FUR_COLOR_IDS.CREAM]: {
     id: CAT_FUR_COLOR_IDS.CREAM,
     name: "크림",
+    cream: "#fff3cf",
     fur: "#f1dca7",
     ear: "#d9a76c",
     shadow: "#c6a15b",
@@ -263,6 +305,14 @@ const elements = {
   stage: document.querySelector(".cat-stage"),
   cat: document.querySelector("[data-cat-state]"),
   controls: document.querySelector(".cat-controls"),
+  resizeHandle: document.querySelector("[data-window-resize]"),
+  settingsButton: document.querySelector("[data-settings-button]"),
+  setupPanel: document.querySelector("[data-setup-panel]"),
+  setupSubmit: document.querySelector("[data-setup-submit]"),
+  soundToggle: document.querySelector("[data-sound-toggle]"),
+  startAtLoginToggle: document.querySelector("[data-start-at-login-toggle]"),
+  toolbar: document.querySelector("[data-window-toolbar]"),
+  volumeInput: document.querySelector("[data-volume-input]"),
   nameInput: document.querySelector("[data-cat-name-input]"),
   nameLabel: document.querySelector("[data-cat-name-label]"),
   breedSelect: document.querySelector("[data-cat-breed-select]"),
@@ -276,6 +326,7 @@ let movementTimeoutId = null;
 let rubTimeoutId = null;
 let runTimeoutId = null;
 let startledTimeoutId = null;
+let turnTimeoutId = null;
 let affectionateApproachTimeoutId = null;
 let coyAvoidTimeoutId = null;
 let playfulTimeoutId = null;
@@ -303,20 +354,53 @@ const pettingState = {
   },
   totalDragDistance: 0,
 };
+const windowResizeState = {
+  height: 0,
+  isDragging: false,
+  pointerId: null,
+  startX: 0,
+  startY: 0,
+  width: 0,
+};
+const behaviorState = {
+  lastIdleActionId: null,
+  lastIdleActionTimestamp: 0,
+  lastInteractionTimestamp: Date.now(),
+};
+const performanceState = {
+  lastSampleTimestamp: Date.now(),
+  moveCount: 0,
+  pointerFrameId: null,
+  pendingPointerEvent: null,
+};
+let audioContext = null;
 const catProfile = {
   breedId: DEFAULT_BREED_ID,
   eyeColorId: DEFAULT_EYE_COLOR_ID,
   furColorId: DEFAULT_FUR_COLOR_ID,
   name: CAT_PROFILE_CONFIG.DEFAULT_NAME,
   personalityId: DEFAULT_PERSONALITY_ID,
+  soundEnabled: SOUND_CONFIG.DEFAULT_ENABLED,
+  startAtLogin: false,
+  volume: SOUND_CONFIG.DEFAULT_VOLUME,
 };
+
+let isApplyingStoredProfile = false;
 
 function clampValue(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
 function setCatState(catState) {
+  if (elements.cat.dataset.catState === catState) {
+    return;
+  }
+
   elements.cat.dataset.catState = catState;
+
+  if (catState !== CAT_STATES.IDLE && catState !== CAT_STATES.SLEEP) {
+    setCatIdleAction("");
+  }
 }
 
 function getCatState() {
@@ -324,13 +408,101 @@ function getCatState() {
 }
 
 function setCatDirection(direction) {
+  if (elements.cat.dataset.catDirection === direction) {
+    return;
+  }
+
+  window.clearTimeout(turnTimeoutId);
+  elements.cat.dataset.catTurning = "true";
   elements.cat.dataset.catDirection = direction;
+  turnTimeoutId = window.setTimeout(() => {
+    elements.cat.dataset.catTurning = "false";
+  }, MOVEMENT_CONFIG.TURN_FRAME_MS);
+}
+
+function setCatIdleAction(idleActionId) {
+  elements.cat.dataset.catIdleAction = idleActionId;
 }
 
 function normalizeCatName(name) {
-  const normalizedName = name.trim().slice(0, CAT_PROFILE_CONFIG.MAX_NAME_LENGTH);
+  const normalizedName = String(name ?? "")
+    .trim()
+    .slice(0, CAT_PROFILE_CONFIG.MAX_NAME_LENGTH);
 
   return normalizedName || CAT_PROFILE_CONFIG.DEFAULT_NAME;
+}
+
+function getDefaultCatProfile() {
+  return {
+    breedId: DEFAULT_BREED_ID,
+    eyeColorId: DEFAULT_EYE_COLOR_ID,
+    furColorId: DEFAULT_FUR_COLOR_ID,
+    name: CAT_PROFILE_CONFIG.DEFAULT_NAME,
+    personalityId: DEFAULT_PERSONALITY_ID,
+    soundEnabled: SOUND_CONFIG.DEFAULT_ENABLED,
+    startAtLogin: false,
+    volume: SOUND_CONFIG.DEFAULT_VOLUME,
+  };
+}
+
+function sanitizeCatProfile(profile) {
+  const nextProfile = {
+    ...getDefaultCatProfile(),
+    ...(profile && typeof profile === "object" ? profile : {}),
+  };
+
+  return {
+    breedId: CAT_BREEDS[nextProfile.breedId] ? nextProfile.breedId : DEFAULT_BREED_ID,
+    eyeColorId: CAT_EYE_COLORS[nextProfile.eyeColorId]
+      ? nextProfile.eyeColorId
+      : DEFAULT_EYE_COLOR_ID,
+    furColorId: CAT_FUR_COLORS[nextProfile.furColorId]
+      ? nextProfile.furColorId
+      : DEFAULT_FUR_COLOR_ID,
+    name: normalizeCatName(nextProfile.name),
+    personalityId: CAT_PERSONALITIES[nextProfile.personalityId]
+      ? nextProfile.personalityId
+      : DEFAULT_PERSONALITY_ID,
+    soundEnabled: Boolean(nextProfile.soundEnabled),
+    startAtLogin: Boolean(nextProfile.startAtLogin),
+    volume: clampValue(
+      Number(nextProfile.volume),
+      SOUND_CONFIG.MIN_VOLUME,
+      SOUND_CONFIG.MAX_VOLUME
+    ),
+  };
+}
+
+function saveCatProfile() {
+  if (isApplyingStoredProfile) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(STORAGE_CONFIG.PROFILE_KEY, JSON.stringify(catProfile));
+  } catch {
+    // 저장소가 막힌 환경에서는 현재 세션 설정만 유지한다.
+  }
+}
+
+function loadStoredCatProfile() {
+  try {
+    const storedProfile = window.localStorage.getItem(STORAGE_CONFIG.PROFILE_KEY);
+
+    if (!storedProfile) {
+      return getDefaultCatProfile();
+    }
+
+    return sanitizeCatProfile(JSON.parse(storedProfile));
+  } catch {
+    return getDefaultCatProfile();
+  }
+}
+
+function applyStoredCatProfile() {
+  isApplyingStoredProfile = true;
+  Object.assign(catProfile, loadStoredCatProfile());
+  isApplyingStoredProfile = false;
 }
 
 function setCatName(name, { syncInput = true } = {}) {
@@ -342,12 +514,15 @@ function setCatName(name, { syncInput = true } = {}) {
   if (syncInput) {
     elements.nameInput.value = catProfile.name;
   }
+
+  saveCatProfile();
 }
 
 function setCatBreed(breedId) {
   catProfile.breedId = CAT_BREEDS[breedId] ? breedId : DEFAULT_BREED_ID;
   elements.cat.dataset.catBreed = catProfile.breedId;
   elements.breedSelect.value = catProfile.breedId;
+  saveCatProfile();
 }
 
 function setCatEyeColor(eyeColorId) {
@@ -355,6 +530,7 @@ function setCatEyeColor(eyeColorId) {
   elements.cat.dataset.catEyeColor = catProfile.eyeColorId;
   elements.cat.style.setProperty("--cat-eye", CAT_EYE_COLORS[catProfile.eyeColorId].value);
   elements.eyeColorSelect.value = catProfile.eyeColorId;
+  saveCatProfile();
 }
 
 function setCatFurColor(furColorId) {
@@ -362,8 +538,10 @@ function setCatFurColor(furColorId) {
   elements.cat.dataset.catFurColor = catProfile.furColorId;
   elements.cat.style.setProperty("--cat-fur", CAT_FUR_COLORS[catProfile.furColorId].fur);
   elements.cat.style.setProperty("--cat-ear", CAT_FUR_COLORS[catProfile.furColorId].ear);
+  elements.cat.style.setProperty("--cat-cream", CAT_FUR_COLORS[catProfile.furColorId].cream);
   elements.cat.style.setProperty("--cat-shadow", CAT_FUR_COLORS[catProfile.furColorId].shadow);
   elements.furColorSelect.value = catProfile.furColorId;
+  saveCatProfile();
 }
 
 function getActivePersonality() {
@@ -388,6 +566,58 @@ function setCatPersonality(personalityId) {
     : DEFAULT_PERSONALITY_ID;
   elements.cat.dataset.catPersonality = getActivePersonality().id;
   elements.personalitySelect.value = getActivePersonality().id;
+  saveCatProfile();
+}
+
+function setSoundEnabled(isEnabled) {
+  catProfile.soundEnabled = Boolean(isEnabled);
+  elements.soundToggle.checked = catProfile.soundEnabled;
+  saveCatProfile();
+}
+
+function setVolume(volume) {
+  catProfile.volume = clampValue(Number(volume), SOUND_CONFIG.MIN_VOLUME, SOUND_CONFIG.MAX_VOLUME);
+  elements.volumeInput.value = String(catProfile.volume);
+  saveCatProfile();
+}
+
+function setStartAtLogin(isEnabled) {
+  catProfile.startAtLogin = Boolean(isEnabled);
+  elements.startAtLoginToggle.checked = catProfile.startAtLogin;
+  window.catWindow.setStartAtLogin(catProfile.startAtLogin);
+  saveCatProfile();
+}
+
+function getAudioContext() {
+  if (!audioContext) {
+    audioContext = new window.AudioContext();
+  }
+
+  return audioContext;
+}
+
+function playSound(kind) {
+  if (!catProfile.soundEnabled) {
+    return;
+  }
+
+  const context = getAudioContext();
+  const gain = context.createGain();
+  const oscillator = context.createOscillator();
+  const soundMap = {
+    purr: { frequency: 92, duration: 0.22, type: "sine" },
+    step: { frequency: 180, duration: 0.05, type: "square" },
+    startled: { frequency: 420, duration: 0.12, type: "triangle" },
+  };
+  const sound = soundMap[kind] ?? soundMap.purr;
+
+  oscillator.type = sound.type;
+  oscillator.frequency.value = sound.frequency;
+  gain.gain.value = catProfile.volume * 0.12;
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start();
+  oscillator.stop(context.currentTime + sound.duration);
 }
 
 function getMovementBounds() {
@@ -420,15 +650,29 @@ function setCatPosition(position) {
   updateMouseDistanceToCat();
 }
 
+function setAppState(appState) {
+  elements.app.dataset.appState = appState;
+  setMouseEventPassThrough(appState !== APP_STATES.SETUP);
+}
+
+function isSetupOpen() {
+  return elements.app.dataset.appState === APP_STATES.SETUP;
+}
+
 function setInitialState() {
-  elements.app.dataset.appState = APP_STATES.IDLE;
+  setAppState(APP_STATES.SETUP);
   setCatName(catProfile.name);
   setCatBreed(catProfile.breedId);
   setCatEyeColor(catProfile.eyeColorId);
   setCatFurColor(catProfile.furColorId);
   setCatState(CAT_STATES.IDLE);
-  setCatDirection(CAT_DIRECTIONS.RIGHT);
+  setCatIdleAction(IDLE_ACTION_IDS.SIT);
+  elements.cat.dataset.catDirection = CAT_DIRECTIONS.RIGHT;
+  elements.cat.dataset.catTurning = "false";
   setCatPersonality(catProfile.personalityId);
+  setSoundEnabled(catProfile.soundEnabled);
+  setVolume(catProfile.volume);
+  setStartAtLogin(catProfile.startAtLogin);
   elements.cat.dataset.catPointerState = CAT_POINTER_STATES.OUTSIDE;
   elements.cat.dataset.catPetting = "false";
 }
@@ -465,6 +709,7 @@ function setMousePosition(event) {
   mouseState.position.y = event.clientY;
   mouseState.isInsideWindow = true;
   mouseState.lastTimestamp = event.timeStamp;
+  behaviorState.lastInteractionTimestamp = Date.now();
   updateMouseDistanceToCat();
 }
 
@@ -491,14 +736,28 @@ function getDistanceBetweenPoints(firstPoint, secondPoint) {
 function updateMouseDistanceToCat() {
   if (!mouseState.isInsideWindow) {
     mouseState.distanceToCat = null;
+    elements.cat.dataset.catGaze = "none";
     return;
   }
 
-  mouseState.distanceToCat = getDistanceBetweenPoints(mouseState.position, getCatCenterPosition());
+  const catCenter = getCatCenterPosition();
+  mouseState.distanceToCat = getDistanceBetweenPoints(mouseState.position, catCenter);
+  elements.cat.dataset.catGaze =
+    mouseState.distanceToCat <= STARTLED_CONFIG.APPROACH_DISTANCE
+      ? mouseState.position.x < catCenter.x
+        ? "left"
+        : "right"
+      : "none";
 }
 
 function updateMouseEventPassThrough(event) {
   setMousePosition(event);
+
+  if (isSetupOpen()) {
+    setMouseEventPassThrough(false);
+    return;
+  }
+
   updatePettingDrag(event);
   updateAffectionateReaction(event);
   updateCoyReaction(event);
@@ -507,8 +766,26 @@ function updateMouseEventPassThrough(event) {
 
   const isOverCat = isPointInsideElement(event.clientX, event.clientY, elements.cat);
   const isOverControls = isPointInsideElement(event.clientX, event.clientY, elements.controls);
+  const isOverResizeHandle = isPointInsideElement(
+    event.clientX,
+    event.clientY,
+    elements.resizeHandle
+  );
+  const isOverSettingsButton = isPointInsideElement(
+    event.clientX,
+    event.clientY,
+    elements.settingsButton
+  );
+  const isOverToolbar = isPointInsideElement(event.clientX, event.clientY, elements.toolbar);
 
-  setMouseEventPassThrough(!isOverCat && !isOverControls && !pettingState.isDragging);
+  setMouseEventPassThrough(
+    !isOverCat &&
+      !isOverControls &&
+      !isOverResizeHandle &&
+      !isOverSettingsButton &&
+      !isOverToolbar &&
+      !pettingState.isDragging
+  );
 }
 
 function setCatPointerState(pointerState) {
@@ -558,11 +835,22 @@ function getPettingRubChance() {
 function triggerRubReaction() {
   window.clearTimeout(movementTimeoutId);
   window.clearTimeout(rubTimeoutId);
+  playSound("purr");
   setCatState(isRelaxedPersonality() ? CAT_STATES.SLEEP : CAT_STATES.RUB);
+  setCatPosition(getRubNudgePosition());
   rubTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
     setCatPetting(false);
   }, getPettingReactionDuration());
+}
+
+function getRubNudgePosition() {
+  const directionMultiplier = elements.cat.dataset.catPetDirection === "left" ? -1 : 1;
+
+  return {
+    x: elements.cat.offsetLeft + directionMultiplier * 10,
+    y: elements.cat.offsetTop + 2,
+  };
 }
 
 function isCatReacting() {
@@ -755,6 +1043,7 @@ function triggerPlayfulChase(event) {
     chasePosition.x < elements.cat.offsetLeft ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT
   );
   setCatState(CAT_STATES.RUN);
+  playSound("step");
   setCatPosition(chasePosition);
   playfulTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
@@ -804,6 +1093,7 @@ function startRunReaction() {
     runPosition.x < elements.cat.offsetLeft ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT
   );
   setCatState(CAT_STATES.RUN);
+  playSound("startled");
   setCatPosition(runPosition);
   runTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
@@ -849,6 +1139,8 @@ function updatePettingDrag(event) {
     pettingState.lastPosition,
     currentPosition
   );
+  elements.cat.dataset.catPetDirection =
+    currentPosition.x < pettingState.lastPosition.x ? "left" : "right";
   pettingState.lastPosition = currentPosition;
 
   if (
@@ -893,13 +1185,30 @@ function registerCatMouseEvents() {
 }
 
 function registerPointerTracking() {
-  window.addEventListener("mousemove", updateMouseEventPassThrough);
+  window.addEventListener("mousemove", schedulePointerTracking);
   window.addEventListener("mouseup", stopPettingDrag);
   window.addEventListener("mouseleave", () => {
     clearMousePosition();
     stopPettingDrag();
     setMouseEventPassThrough(true);
     setCatPointerState(CAT_POINTER_STATES.OUTSIDE);
+  });
+}
+
+function schedulePointerTracking(event) {
+  performanceState.pendingPointerEvent = event;
+
+  if (performanceState.pointerFrameId !== null) {
+    return;
+  }
+
+  performanceState.pointerFrameId = window.requestAnimationFrame(() => {
+    performanceState.pointerFrameId = null;
+
+    if (performanceState.pendingPointerEvent) {
+      updateMouseEventPassThrough(performanceState.pendingPointerEvent);
+      performanceState.pendingPointerEvent = null;
+    }
   });
 }
 
@@ -950,16 +1259,52 @@ function shouldMoveRandomly() {
   return isChanceSuccessful(movement.walkWeight / totalWeight);
 }
 
-function getPersonalityRestState() {
-  if (!isRelaxedPersonality()) {
-    return CAT_STATES.IDLE;
+function getIdleBehaviorWeight(behavior) {
+  const movement = getPersonalityMovement();
+  const sleepModifier = behavior.state === CAT_STATES.SLEEP ? movement.sleepWeight + 0.2 : 1;
+  const repeatedModifier = behavior.id === behaviorState.lastIdleActionId ? 0.25 : 1;
+  const longIdleModifier =
+    Date.now() - behaviorState.lastInteractionTimestamp >=
+      IDLE_BEHAVIOR_CONFIG.LONG_IDLE_SLEEP_MS && behavior.state === CAT_STATES.SLEEP
+      ? 2.6
+      : 1;
+
+  return behavior.weight * sleepModifier * repeatedModifier * longIdleModifier;
+}
+
+function chooseIdleBehavior() {
+  const weightedBehaviors = IDLE_BEHAVIOR_CONFIG.TABLE.map((behavior) => ({
+    ...behavior,
+    computedWeight: getIdleBehaviorWeight(behavior),
+  }));
+  const totalWeight = weightedBehaviors.reduce(
+    (weightSum, behavior) => weightSum + behavior.computedWeight,
+    0
+  );
+  let cursor = Math.random() * totalWeight;
+
+  for (const behavior of weightedBehaviors) {
+    cursor -= behavior.computedWeight;
+
+    if (cursor <= 0) {
+      return behavior;
+    }
   }
 
-  const movement = getPersonalityMovement();
-  const restWeight = movement.idleWeight + movement.sleepWeight;
-  const sleepChance = restWeight === 0 ? 0 : movement.sleepWeight / restWeight;
+  return weightedBehaviors[0];
+}
 
-  return isChanceSuccessful(sleepChance) ? CAT_STATES.SLEEP : CAT_STATES.IDLE;
+function applyIdleBehavior() {
+  if (Date.now() - behaviorState.lastIdleActionTimestamp < IDLE_BEHAVIOR_CONFIG.COOLDOWN_MS) {
+    return;
+  }
+
+  const behavior = chooseIdleBehavior();
+
+  behaviorState.lastIdleActionId = behavior.id;
+  behaviorState.lastIdleActionTimestamp = Date.now();
+  setCatIdleAction(behavior.id);
+  setCatState(behavior.state);
 }
 
 function triggerPlayfulIdleHop() {
@@ -988,15 +1333,21 @@ function moveCatToRandomPosition() {
       return;
     }
 
-    setCatState(getPersonalityRestState());
+    applyIdleBehavior();
     return;
   }
 
   window.clearTimeout(movementTimeoutId);
+  performanceState.moveCount += 1;
+  elements.cat.style.setProperty(
+    "--move-duration",
+    `${MOVEMENT_CONFIG.TRANSITION_MS * (0.85 + Math.random() * 0.35)}ms`
+  );
   setCatState(CAT_STATES.WALK);
+  playSound("step");
   setCatPosition(getPersonalityRandomPosition());
   movementTimeoutId = window.setTimeout(() => {
-    setCatState(CAT_STATES.IDLE);
+    applyIdleBehavior();
   }, MOVEMENT_CONFIG.TRANSITION_MS);
 }
 
@@ -1022,6 +1373,7 @@ function registerBoundaryGuards() {
 function registerNameControls() {
   elements.controls.addEventListener("submit", (event) => {
     event.preventDefault();
+    completeSetup();
   });
 
   elements.nameInput.addEventListener("input", (event) => {
@@ -1047,11 +1399,97 @@ function registerNameControls() {
   elements.personalitySelect.addEventListener("change", (event) => {
     setCatPersonality(event.target.value);
   });
+
+  elements.soundToggle.addEventListener("change", (event) => {
+    setSoundEnabled(event.target.checked);
+    playSound("purr");
+  });
+
+  elements.volumeInput.addEventListener("input", (event) => {
+    setVolume(event.target.value);
+  });
+
+  elements.startAtLoginToggle.addEventListener("change", (event) => {
+    setStartAtLogin(event.target.checked);
+  });
 }
 
+function completeSetup() {
+  setCatName(elements.nameInput.value);
+  setAppState(APP_STATES.COMPANION);
+  keepCatInsideStage();
+}
+
+function registerSetupControls() {
+  elements.settingsButton.addEventListener("click", () => {
+    setAppState(APP_STATES.SETUP);
+  });
+}
+
+function startWindowResize(event) {
+  event.preventDefault();
+  windowResizeState.isDragging = true;
+  windowResizeState.pointerId = event.pointerId;
+  windowResizeState.startX = event.screenX;
+  windowResizeState.startY = event.screenY;
+  windowResizeState.width = window.innerWidth;
+  windowResizeState.height = window.innerHeight;
+  elements.resizeHandle.setPointerCapture(event.pointerId);
+  setMouseEventPassThrough(false);
+}
+
+function updateWindowResize(event) {
+  if (!windowResizeState.isDragging) {
+    return;
+  }
+
+  window.catWindow.setWindowSize({
+    width: windowResizeState.width + event.screenX - windowResizeState.startX,
+    height: windowResizeState.height + event.screenY - windowResizeState.startY,
+  });
+}
+
+function stopWindowResize(event) {
+  if (!windowResizeState.isDragging) {
+    return;
+  }
+
+  windowResizeState.isDragging = false;
+
+  if (windowResizeState.pointerId !== null) {
+    elements.resizeHandle.releasePointerCapture(windowResizeState.pointerId);
+  }
+
+  windowResizeState.pointerId = null;
+  updateMouseEventPassThrough(event);
+}
+
+function registerWindowResizeControls() {
+  elements.resizeHandle.addEventListener("pointerdown", startWindowResize);
+  window.addEventListener("pointermove", updateWindowResize);
+  window.addEventListener("pointerup", stopWindowResize);
+}
+
+function registerPerformanceMonitoring() {
+  window.setInterval(() => {
+    const now = Date.now();
+    const elapsedSeconds = Math.max((now - performanceState.lastSampleTimestamp) / 1000, 1);
+
+    elements.app.dataset.movesPerMinute = String(
+      Math.round((performanceState.moveCount / elapsedSeconds) * 60)
+    );
+    performanceState.moveCount = 0;
+    performanceState.lastSampleTimestamp = now;
+  }, PERFORMANCE_CONFIG.SAMPLE_INTERVAL_MS);
+}
+
+applyStoredCatProfile();
 setInitialState();
 registerPointerTracking();
 registerCatMouseEvents();
 registerNameControls();
+registerSetupControls();
+registerWindowResizeControls();
 registerRandomMovement();
 registerBoundaryGuards();
+registerPerformanceMonitoring();
