@@ -22,6 +22,7 @@ const IDLE_ACTION_IDS = {
   CURL: "curl",
   GROOM: "groom",
   LOOK: "look",
+  SCAN: "scan",
   SCRATCH: "scratch",
   SIT: "sit",
   TAIL: "tail",
@@ -41,7 +42,10 @@ const PERSONALITY_IDS = {
 };
 
 const MOVEMENT_CONFIG = {
-  INTERVAL_MS: 4000,
+  HESITATION_MS: 360,
+  INTERVAL_MS: 5600,
+  IDLE_WEIGHT_MULTIPLIER: 1.25,
+  WALK_CHANCE_MULTIPLIER: 0.82,
   TRANSITION_MS: 1200,
   TURN_FRAME_MS: 180,
 };
@@ -61,9 +65,11 @@ const STARTLED_CONFIG = {
 
 const AFFECTIONATE_CONFIG = {
   APPROACH_DISTANCE: 220,
-  APPROACH_STEP_DISTANCE: 70,
+  APPROACH_STEP_DISTANCE: 54,
   APPROACH_COOLDOWN_MS: 1800,
-  LINGER_DISTANCE: 150,
+  COMFORT_DISTANCE: 118,
+  LINGER_DISTANCE: 96,
+  MAX_LINGER_MS: 9000,
 };
 
 const COY_CONFIG = {
@@ -79,6 +85,11 @@ const TIMID_CONFIG = {
   SLOW_PETTING_SPEED: 0.35,
   SLOW_PETTING_RUB_BONUS: 0.3,
   FAST_PETTING_RUB_PENALTY: 0.25,
+};
+
+const CORNER_PREFERENCE_CONFIG = {
+  CHANCE: 0.22,
+  PADDING: 56,
 };
 
 const RELAXED_CONFIG = {
@@ -100,10 +111,27 @@ const IDLE_BEHAVIOR_CONFIG = {
     { id: IDLE_ACTION_IDS.SIT, state: CAT_STATES.IDLE, weight: 1.6 },
     { id: IDLE_ACTION_IDS.CURL, state: CAT_STATES.SLEEP, weight: 0.7 },
     { id: IDLE_ACTION_IDS.LOOK, state: CAT_STATES.IDLE, weight: 1.1 },
+    { id: IDLE_ACTION_IDS.SCAN, state: CAT_STATES.IDLE, weight: 0.75 },
     { id: IDLE_ACTION_IDS.SCRATCH, state: CAT_STATES.IDLE, weight: 0.55 },
     { id: IDLE_ACTION_IDS.GROOM, state: CAT_STATES.IDLE, weight: 0.65 },
     { id: IDLE_ACTION_IDS.TAIL, state: CAT_STATES.IDLE, weight: 1 },
   ],
+};
+
+const SCREEN_AWARENESS_CONFIG = {
+  EDGE_PADDING: 44,
+};
+
+const MOUSE_GAZE_CONFIG = {
+  AWARENESS_DISTANCE: 260,
+  AXIS_DEAD_ZONE: 18,
+};
+
+const SHORT_PAUSE_CONFIG = {
+  CHANCE: 0.35,
+  COOLDOWN_MS: 7000,
+  DURATION_MS: 420,
+  TRIGGER_DISTANCE: 170,
 };
 
 const SOUND_CONFIG = {
@@ -111,10 +139,6 @@ const SOUND_CONFIG = {
   DEFAULT_VOLUME: 0.25,
   MAX_VOLUME: 1,
   MIN_VOLUME: 0,
-};
-
-const PERFORMANCE_CONFIG = {
-  SAMPLE_INTERVAL_MS: 15000,
 };
 
 const CAT_PROFILE_CONFIG = {
@@ -329,9 +353,12 @@ let startledTimeoutId = null;
 let turnTimeoutId = null;
 let affectionateApproachTimeoutId = null;
 let coyAvoidTimeoutId = null;
+let hesitationTimeoutId = null;
+let pauseTimeoutId = null;
 let playfulTimeoutId = null;
 let lastAffectionateApproachTimestamp = 0;
 let lastCoyAvoidTimestamp = 0;
+let lastPauseTimestamp = 0;
 let lastPlayfulChaseTimestamp = 0;
 const mouseState = {
   position: {
@@ -366,10 +393,9 @@ const behaviorState = {
   lastIdleActionId: null,
   lastIdleActionTimestamp: 0,
   lastInteractionTimestamp: Date.now(),
+  lingerStartTimestamp: null,
 };
 const performanceState = {
-  lastSampleTimestamp: Date.now(),
-  moveCount: 0,
   pointerFrameId: null,
   pendingPointerEvent: null,
 };
@@ -422,6 +448,22 @@ function setCatDirection(direction) {
 
 function setCatIdleAction(idleActionId) {
   elements.cat.dataset.catIdleAction = idleActionId;
+}
+
+function setCatPausing(isPausing) {
+  elements.cat.dataset.catPausing = String(isPausing);
+}
+
+function setCatHesitating(isHesitating) {
+  elements.cat.dataset.catHesitating = String(isHesitating);
+}
+
+function isCatHesitating() {
+  return elements.cat.dataset.catHesitating === "true";
+}
+
+function isCatPausing() {
+  return elements.cat.dataset.catPausing === "true";
 }
 
 function normalizeCatName(name) {
@@ -642,11 +684,33 @@ function clampCatPosition(position) {
   };
 }
 
+function getCatScreenEdge(position, bounds) {
+  const edgeDistances = [
+    { id: "left", distance: position.x - bounds.minX },
+    { id: "right", distance: bounds.maxX - position.x },
+    { id: "top", distance: position.y - bounds.minY },
+    { id: "bottom", distance: bounds.maxY - position.y },
+  ].filter((edge) => edge.distance <= SCREEN_AWARENESS_CONFIG.EDGE_PADDING);
+
+  if (edgeDistances.length === 0) {
+    return "none";
+  }
+
+  edgeDistances.sort((firstEdge, secondEdge) => firstEdge.distance - secondEdge.distance);
+
+  return edgeDistances[0].id;
+}
+
+function updateScreenAwareness(position) {
+  elements.cat.dataset.catScreenEdge = getCatScreenEdge(position, getMovementBounds());
+}
+
 function setCatPosition(position) {
   const clampedPosition = clampCatPosition(position);
 
   elements.cat.style.left = `${clampedPosition.x}px`;
   elements.cat.style.top = `${clampedPosition.y}px`;
+  updateScreenAwareness(clampedPosition);
   updateMouseDistanceToCat();
 }
 
@@ -673,8 +737,12 @@ function setInitialState() {
   setSoundEnabled(catProfile.soundEnabled);
   setVolume(catProfile.volume);
   setStartAtLogin(catProfile.startAtLogin);
+  elements.cat.dataset.catGaze = "none";
+  elements.cat.dataset.catHesitating = "false";
+  elements.cat.dataset.catPausing = "false";
   elements.cat.dataset.catPointerState = CAT_POINTER_STATES.OUTSIDE;
   elements.cat.dataset.catPetting = "false";
+  elements.cat.dataset.catScreenEdge = "none";
 }
 
 function isPointInsideElement(pointX, pointY, element) {
@@ -733,6 +801,28 @@ function getDistanceBetweenPoints(firstPoint, secondPoint) {
   return Math.hypot(firstPoint.x - secondPoint.x, firstPoint.y - secondPoint.y);
 }
 
+function getMouseGazeDirection(catCenter) {
+  if (mouseState.distanceToCat > MOUSE_GAZE_CONFIG.AWARENESS_DISTANCE) {
+    return "none";
+  }
+
+  const offsetX = mouseState.position.x - catCenter.x;
+  const offsetY = mouseState.position.y - catCenter.y;
+
+  if (
+    Math.abs(offsetX) <= MOUSE_GAZE_CONFIG.AXIS_DEAD_ZONE &&
+    Math.abs(offsetY) <= MOUSE_GAZE_CONFIG.AXIS_DEAD_ZONE
+  ) {
+    return "center";
+  }
+
+  if (Math.abs(offsetX) >= Math.abs(offsetY)) {
+    return offsetX < 0 ? "left" : "right";
+  }
+
+  return offsetY < 0 ? "up" : "down";
+}
+
 function updateMouseDistanceToCat() {
   if (!mouseState.isInsideWindow) {
     mouseState.distanceToCat = null;
@@ -742,12 +832,39 @@ function updateMouseDistanceToCat() {
 
   const catCenter = getCatCenterPosition();
   mouseState.distanceToCat = getDistanceBetweenPoints(mouseState.position, catCenter);
-  elements.cat.dataset.catGaze =
-    mouseState.distanceToCat <= STARTLED_CONFIG.APPROACH_DISTANCE
-      ? mouseState.position.x < catCenter.x
-        ? "left"
-        : "right"
-      : "none";
+  elements.cat.dataset.catGaze = getMouseGazeDirection(catCenter);
+}
+
+function shouldTriggerShortPause() {
+  const catState = getCatState();
+
+  return (
+    mouseState.distanceToCat !== null &&
+    mouseState.distanceToCat <= SHORT_PAUSE_CONFIG.TRIGGER_DISTANCE &&
+    mouseState.speed < getStartledSpeedThreshold() &&
+    (catState === CAT_STATES.IDLE || catState === CAT_STATES.SLEEP) &&
+    Date.now() - lastPauseTimestamp >= SHORT_PAUSE_CONFIG.COOLDOWN_MS &&
+    !pettingState.isDragging &&
+    !pettingState.isPetting &&
+    !isCatPausing() &&
+    !isCatReacting() &&
+    isChanceSuccessful(SHORT_PAUSE_CONFIG.CHANCE)
+  );
+}
+
+function triggerShortPause() {
+  window.clearTimeout(pauseTimeoutId);
+  lastPauseTimestamp = Date.now();
+  setCatPausing(true);
+  pauseTimeoutId = window.setTimeout(() => {
+    setCatPausing(false);
+  }, SHORT_PAUSE_CONFIG.DURATION_MS);
+}
+
+function updateShortPauseReaction() {
+  if (shouldTriggerShortPause()) {
+    triggerShortPause();
+  }
 }
 
 function updateMouseEventPassThrough(event) {
@@ -759,6 +876,7 @@ function updateMouseEventPassThrough(event) {
   }
 
   updatePettingDrag(event);
+  updateShortPauseReaction();
   updateAffectionateReaction(event);
   updateCoyReaction(event);
   updatePlayfulReaction(event);
@@ -878,11 +996,20 @@ function isPlayfulPersonality() {
 }
 
 function isAffectionateLingeringNearMouse() {
-  return (
-    isAffectionatePersonality() &&
-    mouseState.distanceToCat !== null &&
-    mouseState.distanceToCat <= AFFECTIONATE_CONFIG.LINGER_DISTANCE
-  );
+  if (
+    !isAffectionatePersonality() ||
+    mouseState.distanceToCat === null ||
+    mouseState.distanceToCat > AFFECTIONATE_CONFIG.LINGER_DISTANCE
+  ) {
+    behaviorState.lingerStartTimestamp = null;
+    return false;
+  }
+
+  if (behaviorState.lingerStartTimestamp === null) {
+    behaviorState.lingerStartTimestamp = Date.now();
+  }
+
+  return Date.now() - behaviorState.lingerStartTimestamp < AFFECTIONATE_CONFIG.MAX_LINGER_MS;
 }
 
 function shouldTriggerAffectionateApproach(event) {
@@ -890,6 +1017,7 @@ function shouldTriggerAffectionateApproach(event) {
     isAffectionatePersonality() &&
     mouseState.distanceToCat !== null &&
     mouseState.distanceToCat <= AFFECTIONATE_CONFIG.APPROACH_DISTANCE &&
+    mouseState.distanceToCat > AFFECTIONATE_CONFIG.COMFORT_DISTANCE &&
     mouseState.speed < getStartledSpeedThreshold() &&
     event.timeStamp - lastAffectionateApproachTimestamp >=
       AFFECTIONATE_CONFIG.APPROACH_COOLDOWN_MS &&
@@ -1225,23 +1353,20 @@ function getRandomCornerPosition() {
   const bounds = getMovementBounds();
   const horizontalEdge = Math.random() < 0.5 ? bounds.minX : bounds.maxX;
   const verticalEdge = Math.random() < 0.5 ? bounds.minY : bounds.maxY;
+  const edgePadding = Math.max(TIMID_CONFIG.CORNER_PADDING, CORNER_PREFERENCE_CONFIG.PADDING);
 
   return {
-    x: clampValue(
-      horizontalEdge + (Math.random() * 2 - 1) * TIMID_CONFIG.CORNER_PADDING,
-      bounds.minX,
-      bounds.maxX
-    ),
-    y: clampValue(
-      verticalEdge + (Math.random() * 2 - 1) * TIMID_CONFIG.CORNER_PADDING,
-      bounds.minY,
-      bounds.maxY
-    ),
+    x: clampValue(horizontalEdge + (Math.random() * 2 - 1) * edgePadding, bounds.minX, bounds.maxX),
+    y: clampValue(verticalEdge + (Math.random() * 2 - 1) * edgePadding, bounds.minY, bounds.maxY),
   };
 }
 
 function getPersonalityRandomPosition() {
-  if (isTimidPersonality() && isChanceSuccessful(TIMID_CONFIG.CORNER_MOVE_CHANCE)) {
+  const cornerChance = isTimidPersonality()
+    ? TIMID_CONFIG.CORNER_MOVE_CHANCE
+    : CORNER_PREFERENCE_CONFIG.CHANCE;
+
+  if (isChanceSuccessful(cornerChance)) {
     return getRandomCornerPosition();
   }
 
@@ -1254,9 +1379,11 @@ function getRandomMovementInterval() {
 
 function shouldMoveRandomly() {
   const movement = getPersonalityMovement();
-  const totalWeight = movement.idleWeight + movement.walkWeight + movement.sleepWeight;
+  const idleWeight = movement.idleWeight * MOVEMENT_CONFIG.IDLE_WEIGHT_MULTIPLIER;
+  const totalWeight = idleWeight + movement.walkWeight + movement.sleepWeight;
+  const walkChance = (movement.walkWeight / totalWeight) * MOVEMENT_CONFIG.WALK_CHANCE_MULTIPLIER;
 
-  return isChanceSuccessful(movement.walkWeight / totalWeight);
+  return isChanceSuccessful(walkChance);
 }
 
 function getIdleBehaviorWeight(behavior) {
@@ -1309,6 +1436,8 @@ function applyIdleBehavior() {
 
 function triggerPlayfulIdleHop() {
   window.clearTimeout(movementTimeoutId);
+  window.clearTimeout(hesitationTimeoutId);
+  setCatHesitating(false);
   window.clearTimeout(playfulTimeoutId);
   setCatDirection(Math.random() < 0.5 ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT);
   setCatState(CAT_STATES.WALK);
@@ -1321,6 +1450,8 @@ function moveCatToRandomPosition() {
   if (
     pettingState.isDragging ||
     pettingState.isPetting ||
+    isCatHesitating() ||
+    isCatPausing() ||
     isCatReacting() ||
     isAffectionateLingeringNearMouse()
   ) {
@@ -1338,17 +1469,25 @@ function moveCatToRandomPosition() {
   }
 
   window.clearTimeout(movementTimeoutId);
-  performanceState.moveCount += 1;
+  window.clearTimeout(hesitationTimeoutId);
   elements.cat.style.setProperty(
     "--move-duration",
     `${MOVEMENT_CONFIG.TRANSITION_MS * (0.85 + Math.random() * 0.35)}ms`
   );
-  setCatState(CAT_STATES.WALK);
-  playSound("step");
-  setCatPosition(getPersonalityRandomPosition());
-  movementTimeoutId = window.setTimeout(() => {
-    applyIdleBehavior();
-  }, MOVEMENT_CONFIG.TRANSITION_MS);
+  const nextPosition = getPersonalityRandomPosition();
+
+  setCatHesitating(true);
+  setCatIdleAction(IDLE_ACTION_IDS.SCAN);
+  setCatState(CAT_STATES.IDLE);
+  hesitationTimeoutId = window.setTimeout(() => {
+    setCatHesitating(false);
+    setCatState(CAT_STATES.WALK);
+    playSound("step");
+    setCatPosition(nextPosition);
+    movementTimeoutId = window.setTimeout(() => {
+      applyIdleBehavior();
+    }, MOVEMENT_CONFIG.TRANSITION_MS);
+  }, MOVEMENT_CONFIG.HESITATION_MS);
 }
 
 function registerRandomMovement() {
@@ -1474,19 +1613,6 @@ function registerWindowResizeControls() {
   window.addEventListener("pointerup", stopWindowResize);
 }
 
-function registerPerformanceMonitoring() {
-  window.setInterval(() => {
-    const now = Date.now();
-    const elapsedSeconds = Math.max((now - performanceState.lastSampleTimestamp) / 1000, 1);
-
-    elements.app.dataset.movesPerMinute = String(
-      Math.round((performanceState.moveCount / elapsedSeconds) * 60)
-    );
-    performanceState.moveCount = 0;
-    performanceState.lastSampleTimestamp = now;
-  }, PERFORMANCE_CONFIG.SAMPLE_INTERVAL_MS);
-}
-
 applyStoredCatProfile();
 setInitialState();
 registerPointerTracking();
@@ -1496,4 +1622,3 @@ registerSetupControls();
 registerWindowResizeControls();
 registerRandomMovement();
 registerBoundaryGuards();
-registerPerformanceMonitoring();
