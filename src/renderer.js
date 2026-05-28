@@ -359,6 +359,7 @@ let coyAvoidTimeoutId = null;
 let hesitationTimeoutId = null;
 let pauseTimeoutId = null;
 let playfulTimeoutId = null;
+let directedMovementTimeoutId = null;
 let lastAffectionateApproachTimestamp = 0;
 let lastCoyAvoidTimestamp = 0;
 let lastPauseTimestamp = 0;
@@ -448,6 +449,42 @@ function setCatDirection(direction) {
   turnTimeoutId = window.setTimeout(() => {
     elements.cat.dataset.catTurning = "false";
   }, MOVEMENT_CONFIG.TURN_FRAME_MS);
+}
+
+function getDirectionTowardPosition(position) {
+  return position.x < elements.cat.offsetLeft ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT;
+}
+
+function clearPendingDirectedMovement() {
+  window.clearTimeout(directedMovementTimeoutId);
+}
+
+function startDirectedMovement(position, { state, soundKind } = {}) {
+  const direction = getDirectionTowardPosition(position);
+  const shouldStageTurn = elements.cat.dataset.catDirection !== direction;
+
+  clearPendingDirectedMovement();
+  setCatDirection(direction);
+
+  const beginMovement = () => {
+    setCatState(state);
+
+    if (soundKind) {
+      playSound(soundKind);
+    }
+
+    setCatPosition(position);
+  };
+
+  if (!shouldStageTurn) {
+    beginMovement();
+    return 0;
+  }
+
+  setCatState(CAT_STATES.IDLE);
+  directedMovementTimeoutId = window.setTimeout(beginMovement, MOVEMENT_CONFIG.TURN_FRAME_MS);
+
+  return MOVEMENT_CONFIG.TURN_FRAME_MS;
 }
 
 function setCatIdleAction(idleActionId) {
@@ -956,6 +993,7 @@ function getPettingRubChance() {
 
 function triggerRubReaction() {
   window.clearTimeout(movementTimeoutId);
+  clearPendingDirectedMovement();
   window.clearTimeout(rubTimeoutId);
   playSound("purr");
   setCatState(isRelaxedPersonality() ? CAT_STATES.SLEEP : CAT_STATES.RUB);
@@ -1054,16 +1092,15 @@ function triggerAffectionateApproach(event) {
   const approachPosition = getAffectionateApproachPosition();
 
   window.clearTimeout(movementTimeoutId);
+  clearPendingDirectedMovement();
   window.clearTimeout(affectionateApproachTimeoutId);
   lastAffectionateApproachTimestamp = event.timeStamp;
-  setCatDirection(
-    approachPosition.x < elements.cat.offsetLeft ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT
-  );
-  setCatState(CAT_STATES.WALK);
-  setCatPosition(approachPosition);
+  const turnDelay = startDirectedMovement(approachPosition, {
+    state: CAT_STATES.WALK,
+  });
   affectionateApproachTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
-  }, MOVEMENT_CONFIG.TRANSITION_MS);
+  }, turnDelay + MOVEMENT_CONFIG.TRANSITION_MS);
 }
 
 function updateAffectionateReaction(event) {
@@ -1113,18 +1150,17 @@ function triggerCoyAvoid(event, { force = false } = {}) {
   const avoidPosition = getCoyAvoidPosition();
 
   window.clearTimeout(movementTimeoutId);
+  clearPendingDirectedMovement();
   window.clearTimeout(rubTimeoutId);
   window.clearTimeout(coyAvoidTimeoutId);
   lastCoyAvoidTimestamp = event.timeStamp;
   setCatPetting(false);
-  setCatDirection(
-    avoidPosition.x < elements.cat.offsetLeft ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT
-  );
-  setCatState(CAT_STATES.WALK);
-  setCatPosition(avoidPosition);
+  const turnDelay = startDirectedMovement(avoidPosition, {
+    state: CAT_STATES.WALK,
+  });
   coyAvoidTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
-  }, MOVEMENT_CONFIG.TRANSITION_MS);
+  }, turnDelay + MOVEMENT_CONFIG.TRANSITION_MS);
 }
 
 function updateCoyReaction(event) {
@@ -1169,17 +1205,16 @@ function triggerPlayfulChase(event) {
   const chasePosition = getPlayfulChasePosition();
 
   window.clearTimeout(movementTimeoutId);
+  clearPendingDirectedMovement();
   window.clearTimeout(playfulTimeoutId);
   lastPlayfulChaseTimestamp = event.timeStamp;
-  setCatDirection(
-    chasePosition.x < elements.cat.offsetLeft ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT
-  );
-  setCatState(CAT_STATES.RUN);
-  playSound("step");
-  setCatPosition(chasePosition);
+  const turnDelay = startDirectedMovement(chasePosition, {
+    state: CAT_STATES.RUN,
+    soundKind: "step",
+  });
   playfulTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
-  }, STARTLED_CONFIG.RUN_DURATION_MS);
+  }, turnDelay + STARTLED_CONFIG.RUN_DURATION_MS);
 }
 
 function updatePlayfulReaction(event) {
@@ -1221,19 +1256,18 @@ function getRunAwayPosition() {
 function startRunReaction() {
   const runPosition = getRunAwayPosition();
 
-  setCatDirection(
-    runPosition.x < elements.cat.offsetLeft ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT
-  );
-  setCatState(CAT_STATES.RUN);
-  playSound("startled");
-  setCatPosition(runPosition);
+  const turnDelay = startDirectedMovement(runPosition, {
+    state: CAT_STATES.RUN,
+    soundKind: "startled",
+  });
   runTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
-  }, STARTLED_CONFIG.RUN_DURATION_MS);
+  }, turnDelay + STARTLED_CONFIG.RUN_DURATION_MS);
 }
 
 function triggerStartledReaction() {
   window.clearTimeout(movementTimeoutId);
+  clearPendingDirectedMovement();
   window.clearTimeout(rubTimeoutId);
   window.clearTimeout(runTimeoutId);
   window.clearTimeout(startledTimeoutId);
@@ -1461,13 +1495,27 @@ function applyIdleBehavior() {
 function triggerPlayfulIdleHop() {
   window.clearTimeout(movementTimeoutId);
   window.clearTimeout(hesitationTimeoutId);
+  clearPendingDirectedMovement();
   setCatHesitating(false);
   window.clearTimeout(playfulTimeoutId);
-  setCatDirection(Math.random() < 0.5 ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT);
-  setCatState(CAT_STATES.WALK);
+  const hopDirection = Math.random() < 0.5 ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT;
+  const turnDelay =
+    elements.cat.dataset.catDirection === hopDirection ? 0 : MOVEMENT_CONFIG.TURN_FRAME_MS;
+
+  setCatDirection(hopDirection);
+
+  if (turnDelay > 0) {
+    setCatState(CAT_STATES.IDLE);
+    directedMovementTimeoutId = window.setTimeout(() => {
+      setCatState(CAT_STATES.WALK);
+    }, turnDelay);
+  } else {
+    setCatState(CAT_STATES.WALK);
+  }
+
   playfulTimeoutId = window.setTimeout(() => {
     setCatState(CAT_STATES.IDLE);
-  }, PLAYFUL_CONFIG.IDLE_HOP_DURATION_MS);
+  }, turnDelay + PLAYFUL_CONFIG.IDLE_HOP_DURATION_MS);
 }
 
 function moveCatToRandomPosition() {
@@ -1495,6 +1543,7 @@ function moveCatToRandomPosition() {
 
   window.clearTimeout(movementTimeoutId);
   window.clearTimeout(hesitationTimeoutId);
+  clearPendingDirectedMovement();
   elements.cat.style.setProperty(
     "--move-duration",
     `${MOVEMENT_CONFIG.TRANSITION_MS * (0.85 + Math.random() * 0.35)}ms`
@@ -1506,13 +1555,15 @@ function moveCatToRandomPosition() {
   setCatState(CAT_STATES.IDLE);
   hesitationTimeoutId = window.setTimeout(() => {
     setCatHesitating(false);
-    setCatState(CAT_STATES.WALK);
-    playSound("step");
-    setCatPosition(nextPosition);
+    const turnDelay = startDirectedMovement(nextPosition, {
+      state: CAT_STATES.WALK,
+      soundKind: "step",
+    });
+
     movementTimeoutId = window.setTimeout(() => {
       movementRestUntilTimestamp = Date.now() + MOVEMENT_CONFIG.POST_WALK_REST_MS;
       applyIdleBehavior();
-    }, MOVEMENT_CONFIG.TRANSITION_MS);
+    }, turnDelay + MOVEMENT_CONFIG.TRANSITION_MS);
   }, MOVEMENT_CONFIG.HESITATION_MS);
 }
 
