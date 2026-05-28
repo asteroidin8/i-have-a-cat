@@ -45,6 +45,8 @@ const MOVEMENT_CONFIG = {
   HESITATION_MS: 360,
   INTERVAL_MS: 5600,
   IDLE_WEIGHT_MULTIPLIER: 1.25,
+  MAX_STEP_DISTANCE: 180,
+  POST_WALK_REST_MS: 2200,
   WALK_CHANCE_MULTIPLIER: 0.82,
   TRANSITION_MS: 1200,
   TURN_FRAME_MS: 180,
@@ -360,6 +362,7 @@ let lastAffectionateApproachTimestamp = 0;
 let lastCoyAvoidTimestamp = 0;
 let lastPauseTimestamp = 0;
 let lastPlayfulChaseTimestamp = 0;
+let movementRestUntilTimestamp = 0;
 const mouseState = {
   position: {
     x: 0,
@@ -1377,6 +1380,22 @@ function getRandomMovementInterval() {
   return MOVEMENT_CONFIG.INTERVAL_MS * getPersonalityMovement().intervalMultiplier;
 }
 
+function getShortStepPosition(targetPosition) {
+  const currentPosition = getCurrentCatPosition();
+  const distance = getDistanceBetweenPoints(currentPosition, targetPosition);
+
+  if (distance <= MOVEMENT_CONFIG.MAX_STEP_DISTANCE) {
+    return targetPosition;
+  }
+
+  const stepRatio = MOVEMENT_CONFIG.MAX_STEP_DISTANCE / distance;
+
+  return clampCatPosition({
+    x: currentPosition.x + (targetPosition.x - currentPosition.x) * stepRatio,
+    y: currentPosition.y + (targetPosition.y - currentPosition.y) * stepRatio,
+  });
+}
+
 function shouldMoveRandomly() {
   const movement = getPersonalityMovement();
   const idleWeight = movement.idleWeight * MOVEMENT_CONFIG.IDLE_WEIGHT_MULTIPLIER;
@@ -1453,6 +1472,7 @@ function moveCatToRandomPosition() {
     isCatHesitating() ||
     isCatPausing() ||
     isCatReacting() ||
+    Date.now() < movementRestUntilTimestamp ||
     isAffectionateLingeringNearMouse()
   ) {
     return;
@@ -1474,7 +1494,7 @@ function moveCatToRandomPosition() {
     "--move-duration",
     `${MOVEMENT_CONFIG.TRANSITION_MS * (0.85 + Math.random() * 0.35)}ms`
   );
-  const nextPosition = getPersonalityRandomPosition();
+  const nextPosition = getShortStepPosition(getPersonalityRandomPosition());
 
   setCatHesitating(true);
   setCatIdleAction(IDLE_ACTION_IDS.SCAN);
@@ -1485,6 +1505,7 @@ function moveCatToRandomPosition() {
     playSound("step");
     setCatPosition(nextPosition);
     movementTimeoutId = window.setTimeout(() => {
+      movementRestUntilTimestamp = Date.now() + MOVEMENT_CONFIG.POST_WALK_REST_MS;
       applyIdleBehavior();
     }, MOVEMENT_CONFIG.TRANSITION_MS);
   }, MOVEMENT_CONFIG.HESITATION_MS);
