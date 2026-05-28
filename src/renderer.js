@@ -42,6 +42,7 @@ const PERSONALITY_IDS = {
 };
 
 const MOVEMENT_CONFIG = {
+  ACTION_INTERVAL_MULTIPLIER: 1.18,
   HESITATION_MS: 360,
   INTERVAL_MS: 5600,
   IDLE_WEIGHT_MULTIPLIER: 1.25,
@@ -1377,7 +1378,11 @@ function getPersonalityRandomPosition() {
 }
 
 function getRandomMovementInterval() {
-  return MOVEMENT_CONFIG.INTERVAL_MS * getPersonalityMovement().intervalMultiplier;
+  return (
+    MOVEMENT_CONFIG.INTERVAL_MS *
+    getPersonalityMovement().intervalMultiplier *
+    MOVEMENT_CONFIG.ACTION_INTERVAL_MULTIPLIER
+  );
 }
 
 function getShortStepPosition(targetPosition) {
