@@ -44,8 +44,7 @@ body {
   z-index: 4;
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 160px;
+  gap: 0;
   color: var(--cat-line);
   font:
     700 12px/1 system-ui,
@@ -57,13 +56,28 @@ body {
 
 .window-toolbar__drag {
   display: block;
-  flex: 1;
-  padding: 8px 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  overflow: hidden;
   background: var(--control-surface);
   border: 2px solid var(--cat-line);
   box-shadow: 3px 3px 0 var(--panel-shadow);
   cursor: move;
+  font-size: 0;
   -webkit-app-region: drag;
+}
+
+.window-toolbar__drag::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(var(--cat-line), var(--cat-line)) 8px 8px / 4px 4px no-repeat,
+    linear-gradient(var(--cat-line), var(--cat-line)) 16px 8px / 4px 4px no-repeat,
+    linear-gradient(var(--cat-line), var(--cat-line)) 8px 16px / 4px 4px no-repeat,
+    linear-gradient(var(--cat-line), var(--cat-line)) 16px 16px / 4px 4px no-repeat;
+  content: "";
 }
 
 .window-toolbar__button,
@@ -76,6 +90,7 @@ body {
 }
 
 .window-toolbar__button {
+  display: none;
   padding: 8px 10px;
   cursor: pointer;
   -webkit-app-region: no-drag;
@@ -480,24 +495,12 @@ body {
 
 .cat__name {
   position: absolute;
-  left: 50%;
-  bottom: calc(100% + 20px);
-  max-width: 140px;
-  padding: 3px 6px;
+  width: 1px;
+  height: 1px;
+  padding: 0;
   overflow: hidden;
-  color: var(--cat-line);
-  font:
-    700 12px/1.2 system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  text-align: center;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--control-surface);
-  border: 1px solid var(--control-border);
-  transform: translateX(-50%);
+  clip-path: inset(50%);
 }
 
 .cat[data-cat-direction="left"] .cat__sprite {
@@ -611,6 +614,26 @@ body {
   transform: translateX(1px);
 }
 
+.cat[data-cat-pausing="true"] {
+  animation: cat-short-pause-body 0.42s steps(2, end);
+}
+
+.cat[data-cat-pausing="true"] .cat__sprite {
+  animation: cat-short-pause-sprite 0.42s steps(2, end);
+}
+
+.cat[data-cat-pausing="true"] .cat__pixel--eye {
+  transform: translateY(-2px);
+}
+
+.cat[data-cat-hesitating="true"] .cat__sprite {
+  animation: cat-hesitation 0.36s steps(2, end);
+}
+
+.cat[data-cat-hesitating="true"] .cat__pixel--eye {
+  transform: translateX(2px);
+}
+
 .cat[data-cat-state="walk"] {
   animation: cat-walk-body var(--walk-duration) steps(4, end) infinite;
 }
@@ -703,6 +726,14 @@ body {
   animation: cat-look-around 2.4s steps(3, end) infinite;
 }
 
+.cat[data-cat-state="idle"][data-cat-idle-action="scan"] .cat__sprite {
+  animation: cat-scan-around 3.4s steps(5, end) infinite;
+}
+
+.cat[data-cat-state="idle"][data-cat-idle-action="scan"] .cat__pixel--eye {
+  animation: cat-scan-eyes 3.4s steps(5, end) infinite;
+}
+
 .cat[data-cat-state="idle"][data-cat-idle-action="scratch"] .cat__sprite {
   animation: cat-scratch-idle 0.7s steps(4, end) infinite;
 }
@@ -721,6 +752,34 @@ body {
 
 .cat[data-cat-gaze="right"] .cat__pixel--eye {
   transform: translateX(2px);
+}
+
+.cat[data-cat-gaze="up"] .cat__pixel--eye {
+  transform: translateY(-2px);
+}
+
+.cat[data-cat-gaze="down"] .cat__pixel--eye {
+  transform: translateY(2px);
+}
+
+.cat[data-cat-gaze="center"] .cat__pixel--eye {
+  transform: translateY(1px);
+}
+
+.cat[data-cat-screen-edge="left"][data-cat-gaze="none"] .cat__pixel--eye {
+  transform: translateX(2px);
+}
+
+.cat[data-cat-screen-edge="right"][data-cat-gaze="none"] .cat__pixel--eye {
+  transform: translateX(-2px);
+}
+
+.cat[data-cat-screen-edge="top"][data-cat-gaze="none"] .cat__pixel--eye {
+  transform: translateY(2px);
+}
+
+.cat[data-cat-screen-edge="bottom"][data-cat-gaze="none"] .cat__pixel--eye {
+  transform: translateY(-2px);
 }
 
 .cat[data-cat-pet-direction="left"][data-cat-state="rub"] .cat__sprite {
@@ -995,6 +1054,39 @@ body {
   }
 }
 
+@keyframes cat-short-pause-body {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 2px));
+  }
+}
+
+@keyframes cat-short-pause-sprite {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes cat-hesitation {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(1px);
+  }
+}
+
 @keyframes cat-walk-tail {
   0%,
   100% {
@@ -1185,6 +1277,46 @@ body {
   }
 
   66% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes cat-scan-around {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-1px);
+  }
+
+  40%,
+  60% {
+    transform: translateY(-1px);
+  }
+
+  80% {
+    transform: translateX(1px);
+  }
+}
+
+@keyframes cat-scan-eyes {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-2px);
+  }
+
+  40%,
+  60% {
+    transform: translateY(-2px);
+  }
+
+  80% {
     transform: translateX(2px);
   }
 }
