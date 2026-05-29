@@ -461,3 +461,10 @@
 - `npm run lint`와 `npm run format:check`를 실행해 통과를 확인했다.
 - `timeout 8s npm start`로 앱 실행 호출을 확인했으며, Electron 프로세스는 제한 시간으로 종료했다.
 - 다음 단계는 23번 `행동 리듬 개선`의 `이동 중 감속 추가`이다.
+- `TASKS.md` 기준 다음 미완료 항목이 `이동 중 감속 추가`인 것을 확인했다.
+- 고양이 위치 이동 transition에 `--move-easing` 변수를 추가하고, 기본 이동 easing을 끝으로 갈수록 느려지는 곡선으로 조정했다.
+- 이동 좌표 계산, 이동 시간, 상태 전환 타이머는 이번 작업 범위에서 변경하지 않았다.
+- `TASKS.md`에서 `이동 중 감속 추가`를 완료로 표시했다.
+- `npm run lint`와 `npm run format:check`를 실행해 통과를 확인했다.
+- `timeout 8s npm start`로 앱 실행 호출을 확인했으며, Electron 프로세스는 제한 시간으로 종료했다.
+- 다음 단계는 23번 `행동 리듬 개선`의 `갑작스러운 run 빈도 감소`이다.
