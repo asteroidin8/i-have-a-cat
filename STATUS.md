@@ -481,3 +481,10 @@
 - `npm run lint`와 `npm run format:check`를 실행해 통과를 확인했다.
 - `timeout 8s npm start`로 앱 실행 호출을 확인했으며, Electron 프로세스는 제한 시간으로 종료했다.
 - 다음 단계는 23번 `행동 리듬 개선`의 `랜덤 딜레이 추가`이다.
+- `TASKS.md` 기준 다음 미완료 항목이 `랜덤 딜레이 추가`인 것을 확인했다.
+- 랜덤 행동 체크가 고정 간격 `setInterval`로 반복되지 않도록 `setTimeout` 재예약 구조로 변경했다.
+- 성격별 기본 행동 간격은 유지하되, 매회 `ACTION_INTERVAL_RANDOMNESS` 범위 안에서 간격이 조금씩 달라지도록 했다.
+- `TASKS.md`에서 `랜덤 딜레이 추가`를 완료로 표시했다.
+- `npm run lint`와 `npm run format:check`를 실행해 통과를 확인했다.
+- `timeout 8s npm start`로 앱 실행 호출을 확인했으며, Electron 프로세스는 제한 시간으로 종료했다.
+- 다음 단계는 23번 `행동 리듬 개선`의 `상태 전환 사이 easing 추가`이다.
