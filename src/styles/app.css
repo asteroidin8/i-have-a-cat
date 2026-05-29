@@ -626,6 +626,14 @@ body {
   transform: translateY(-2px);
 }
 
+.cat[data-cat-turn-pause="true"] .cat__sprite {
+  animation: cat-short-pause-sprite 0.16s steps(1, end);
+}
+
+.cat[data-cat-turn-pause="true"] .cat__pixel--eye {
+  transform: translateX(1px);
+}
+
 .cat[data-cat-hesitating="true"] .cat__sprite {
   animation: cat-hesitation 0.36s steps(2, end);
 }
