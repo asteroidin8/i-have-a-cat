@@ -61,8 +61,10 @@ const PETTING_CONFIG = {
 
 const STARTLED_CONFIG = {
   APPROACH_DISTANCE: 120,
+  RUN_COOLDOWN_MS: 4200,
   RUN_DISTANCE: 180,
   RUN_DURATION_MS: 700,
+  RUN_REACTION_MULTIPLIER: 0.72,
   STARTLED_DURATION_MS: 280,
   TRIGGER_SPEED: 0.9,
 };
@@ -366,6 +368,7 @@ let lastAffectionateApproachTimestamp = 0;
 let lastCoyAvoidTimestamp = 0;
 let lastPauseTimestamp = 0;
 let lastPlayfulChaseTimestamp = 0;
+let lastRunReactionTimestamp = 0;
 let movementRestUntilTimestamp = 0;
 const mouseState = {
   position: {
@@ -1188,6 +1191,7 @@ function shouldTriggerPlayfulChase(event) {
     !pettingState.isDragging &&
     !pettingState.isPetting &&
     !isCatReacting() &&
+    Date.now() - lastRunReactionTimestamp >= STARTLED_CONFIG.RUN_COOLDOWN_MS &&
     isChanceSuccessful(getPersonalityInteraction().approachChance)
   );
 }
@@ -1217,6 +1221,7 @@ function triggerPlayfulChase(event) {
   clearPendingDirectedMovement();
   window.clearTimeout(playfulTimeoutId);
   lastPlayfulChaseTimestamp = event.timeStamp;
+  lastRunReactionTimestamp = Date.now();
   const turnDelay = startDirectedMovement(chasePosition, {
     state: CAT_STATES.RUN,
     soundKind: "step",
@@ -1244,7 +1249,10 @@ function shouldTriggerStartledReaction() {
     !pettingState.isDragging &&
     !pettingState.isPetting &&
     !isCatReacting() &&
-    isChanceSuccessful(getPersonalityInteraction().runChance)
+    Date.now() - lastRunReactionTimestamp >= STARTLED_CONFIG.RUN_COOLDOWN_MS &&
+    isChanceSuccessful(
+      getPersonalityInteraction().runChance * STARTLED_CONFIG.RUN_REACTION_MULTIPLIER
+    )
   );
 }
 
@@ -1265,6 +1273,7 @@ function getRunAwayPosition() {
 function startRunReaction() {
   const runPosition = getRunAwayPosition();
 
+  lastRunReactionTimestamp = Date.now();
   const turnDelay = startDirectedMovement(runPosition, {
     state: CAT_STATES.RUN,
     soundKind: "startled",
