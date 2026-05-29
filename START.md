@@ -46,6 +46,7 @@
 ## 토큰 절약 및 구조 원칙
 
 - 컨텍스트 길이, 토큰 사용량, 파일 탐색 비용, 코드 중복을 최소화한다.
+- 현재 진행 작업은 `TASKS.md`만 우선 확인하고, 완료된 0~20번 작업은 필요할 때만 `TASKS_ARCHIVE.md`에서 확인한다.
 - 새 파일을 만들기 전에 기존 파일 재사용이나 기존 시스템 확장으로 해결 가능한지 확인한다.
 - 역할이 다르면 파일을 분리하되, 무분별한 파일 생성을 피한다.
 - 기능 파일은 `src/components`, `src/systems`, `src/services`, `src/storage`, `src/config`, `src/utils`, `src/assets`, `src/styles` 구조를 우선 검토한다.
