@@ -43,6 +43,7 @@ const PERSONALITY_IDS = {
 
 const MOVEMENT_CONFIG = {
   ACTION_INTERVAL_MULTIPLIER: 1.18,
+  ACTION_INTERVAL_RANDOMNESS: 0.28,
   HESITATION_MS: 360,
   INTERVAL_MS: 5600,
   IDLE_WEIGHT_MULTIPLIER: 1.25,
@@ -353,6 +354,7 @@ const elements = {
 
 let isIgnoringMouseEvents = true;
 let movementTimeoutId = null;
+let randomMovementTimeoutId = null;
 let rubTimeoutId = null;
 let runTimeoutId = null;
 let startledTimeoutId = null;
@@ -1430,11 +1432,13 @@ function getPersonalityRandomPosition() {
 }
 
 function getRandomMovementInterval() {
-  return (
+  const baseInterval =
     MOVEMENT_CONFIG.INTERVAL_MS *
     getPersonalityMovement().intervalMultiplier *
-    MOVEMENT_CONFIG.ACTION_INTERVAL_MULTIPLIER
-  );
+    MOVEMENT_CONFIG.ACTION_INTERVAL_MULTIPLIER;
+  const jitter = 1 + (Math.random() * 2 - 1) * MOVEMENT_CONFIG.ACTION_INTERVAL_RANDOMNESS;
+
+  return baseInterval * jitter;
 }
 
 function getShortStepPosition(targetPosition) {
@@ -1591,7 +1595,15 @@ function moveCatToRandomPosition() {
 }
 
 function registerRandomMovement() {
-  window.setInterval(moveCatToRandomPosition, getRandomMovementInterval());
+  const scheduleNextMovement = () => {
+    randomMovementTimeoutId = window.setTimeout(() => {
+      moveCatToRandomPosition();
+      scheduleNextMovement();
+    }, getRandomMovementInterval());
+  };
+
+  window.clearTimeout(randomMovementTimeoutId);
+  scheduleNextMovement();
 }
 
 function getCurrentCatPosition() {
