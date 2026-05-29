@@ -16,6 +16,7 @@
   --startled-duration: 0.28s;
   --walk-duration: 0.64s;
   --move-duration: 1.2s;
+  --move-easing: cubic-bezier(0.16, 0.86, 0.2, 1);
 }
 
 * {
@@ -246,8 +247,8 @@ body {
   height: 56px;
   transform: translate(-50%, -50%);
   transition:
-    left var(--move-duration) cubic-bezier(0.2, 0.9, 0.25, 1),
-    top var(--move-duration) cubic-bezier(0.2, 0.9, 0.25, 1);
+    left var(--move-duration) var(--move-easing),
+    top var(--move-duration) var(--move-easing);
   image-rendering: pixelated;
 }
 
