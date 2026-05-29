@@ -453,3 +453,11 @@
 - `git push -u origin smooth-turn-before-move`를 시도했으나 `/tmp/gh-bin/gh_2.75.0_linux_amd64/bin/gh`와 VS Code askpass 경로가 없어 GitHub 인증을 진행할 수 없었다.
 - 같은 푸시를 권한 상승으로 다시 시도했지만 동일한 인증 오류로 실패했다.
 - 따라서 이번 작업의 PR 생성과 자동 머지는 현재 로컬 GitHub 인증 환경 문제로 진행하지 못했다.
+- `TASKS.md` 기준 다음 미완료 항목이 `방향 전환 전 pause 추가`인 것을 확인했다.
+- 방향이 바뀌는 이동에서 방향 전환 프레임 전에 짧은 `data-cat-turn-pause` 상태를 거치도록 구현했다.
+- 랜덤 이동, 성격별 이동 반응, 놀람 도망, 장난꾸러기 idle hop이 공통 pause 시간을 반영하도록 정리했다.
+- `START.md`와 `spec.md`에 무조건 한국어로 작업하고, 작업 단위마다 한국어 PR 생성 후 바로 머지까지 진행한다는 규칙을 더 명확하게 기록했다.
+- `TASKS.md`에서 `방향 전환 전 pause 추가`를 완료로 표시했다.
+- `npm run lint`와 `npm run format:check`를 실행해 통과를 확인했다.
+- `timeout 8s npm start`로 앱 실행 호출을 확인했으며, Electron 프로세스는 제한 시간으로 종료했다.
+- 다음 단계는 23번 `행동 리듬 개선`의 `이동 중 감속 추가`이다.
