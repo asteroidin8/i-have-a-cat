@@ -808,6 +808,11 @@ body {
   transform-origin: 18px 36px;
 }
 
+.cat[data-cat-state="idle"][data-cat-idle-action="ear"] .cat__sprite {
+  animation: cat-ear-twitch 1.2s steps(3, end) infinite;
+  transform-origin: 34px 10px;
+}
+
 .cat[data-cat-gaze="left"] .cat__pixel--eye {
   transform: translateX(-2px);
 }
@@ -1479,6 +1484,21 @@ body {
 
   75% {
     transform: translateX(1px) rotate(-1deg);
+  }
+}
+
+@keyframes cat-ear-twitch {
+  0%,
+  100% {
+    transform: translateY(0) skewX(0deg);
+  }
+
+  35% {
+    transform: translateY(-1px) skewX(2deg);
+  }
+
+  70% {
+    transform: translateY(0) skewX(-1deg);
   }
 }
 

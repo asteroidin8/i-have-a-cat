@@ -20,6 +20,7 @@ const CAT_POINTER_STATES = {
 
 const IDLE_ACTION_IDS = {
   CURL: "curl",
+  EAR: "ear",
   GROOM: "groom",
   LOOK: "look",
   SCAN: "scan",
@@ -131,6 +132,7 @@ const IDLE_BEHAVIOR_CONFIG = {
     { id: IDLE_ACTION_IDS.SCRATCH, state: CAT_STATES.IDLE, weight: 0.55 },
     { id: IDLE_ACTION_IDS.GROOM, state: CAT_STATES.IDLE, weight: 0.65 },
     { id: IDLE_ACTION_IDS.TAIL, state: CAT_STATES.IDLE, weight: 1 },
+    { id: IDLE_ACTION_IDS.EAR, state: CAT_STATES.IDLE, weight: 0.5 },
   ],
 };
 
