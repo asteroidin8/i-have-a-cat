@@ -57,6 +57,7 @@ const timers = {
   pause: null,
   playful: null,
   directedMovement: null,
+  gaze: null,
   stateTransition: null,
 };
 
@@ -78,6 +79,7 @@ const mouseState = {
   isInsideWindow: false,
   lastTimestamp: null,
   nearCatSinceTimestamp: null,
+  pendingGazeDirection: null,
   speed: 0,
 };
 
@@ -371,13 +373,36 @@ function getDistanceBetweenPoints(firstPoint, secondPoint) {
 function updateMouseDistanceToCat() {
   if (!mouseState.isInsideWindow) {
     mouseState.distanceToCat = null;
-    elements.cat.dataset.catGaze = "none";
+    setCatGazeDirection("none", { immediate: true });
     return;
   }
 
   const catCenter = getCatCenterPosition();
   mouseState.distanceToCat = getDistanceBetweenPoints(mouseState.position, catCenter);
-  elements.cat.dataset.catGaze = getMouseGazeDirection(catCenter);
+  setCatGazeDirection(getMouseGazeDirection(catCenter));
+}
+
+function setCatGazeDirection(gazeDirection, { immediate = false } = {}) {
+  if (immediate || gazeDirection === "none") {
+    window.clearTimeout(timers.gaze);
+    mouseState.pendingGazeDirection = null;
+    elements.cat.dataset.catGaze = gazeDirection;
+    return;
+  }
+
+  if (
+    elements.cat.dataset.catGaze === gazeDirection ||
+    mouseState.pendingGazeDirection === gazeDirection
+  ) {
+    return;
+  }
+
+  window.clearTimeout(timers.gaze);
+  mouseState.pendingGazeDirection = gazeDirection;
+  timers.gaze = window.setTimeout(() => {
+    elements.cat.dataset.catGaze = gazeDirection;
+    mouseState.pendingGazeDirection = null;
+  }, MOUSE_GAZE_CONFIG.DIRECTION_DELAY_MS);
 }
 
 function setMouseEventPassThrough(shouldIgnore) {
@@ -414,6 +439,10 @@ function setInitialState() {
   setVolume(catProfile.volume);
   setStartAtLogin(catProfile.startAtLogin);
   elements.cat.dataset.catRenderer = DEFAULT_CAT_RENDERER_ID;
+  elements.cat.style.setProperty(
+    "--cat-gaze-transition-duration",
+    `${MOUSE_GAZE_CONFIG.TRANSITION_MS}ms`
+  );
   elements.cat.dataset.catGaze = "none";
   elements.cat.dataset.catHesitating = "false";
   elements.cat.dataset.catPausing = "false";
