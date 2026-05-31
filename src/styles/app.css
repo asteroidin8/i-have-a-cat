@@ -519,6 +519,7 @@ body {
   box-shadow:
     20px 20px 0 var(--cat-eye),
     44px 20px 0 var(--cat-eye);
+  transition: transform var(--cat-gaze-transition-duration, 180ms) cubic-bezier(0.16, 0.86, 0.2, 1);
 }
 
 .cat__pixel--nose {
