@@ -510,3 +510,6 @@
 - MVP 차수에 직접 속하지 않는 구조 정리 항목은 `TASKS_STRUCTURAL.md`로 분리했다.
 - 단순히 차수별 파일만 만드는 것보다, `TASKS.md`를 인덱스로 유지하고 필요한 상세 파일 하나만 여는 방식이 반복 작업 시 토큰을 더 적게 쓴다고 판단했다.
 - 과거 호환용 `TASKS_ARCHIVE.md`는 중복 상세 목록을 제거하고 차수별 파일 링크만 남겼다.
+- `TASKS_STRUCTURAL.md` 기준 다음 미완료 항목이 `실제 sprite sheet 에셋 매핑 구조 설계`인 것을 확인했다.
+- sprite sheet renderer 전환을 위한 renderer id, 기본 sheet id, sheet asset manifest, frame 크기, sheet 행/열, 외형 variant 매핑 구조를 `src/config.js`에 추가했다.
+- 실제 sprite sheet 에셋 파일, 상태/방향/프레임별 좌표 테이블, 렌더러 전환 로직은 다음 작업으로 남겼다.
