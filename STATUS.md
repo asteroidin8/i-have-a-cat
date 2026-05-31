@@ -546,3 +546,6 @@
 - `TASKS_MVP_3.md` 기준 다음 미완료 항목이 `오래 방치 시 sleep 증가`인 것을 확인했다.
 - 장시간 무입력 후 sleep 가중치 상승값을 `LONG_IDLE_SLEEP_WEIGHT_MULTIPLIER` 설정으로 분리하고 기존보다 조금 강화했다.
 - 장시간 idle variation 추가는 다음 미완료 항목으로 남겼다.
+- `TASKS_MVP_3.md` 기준 다음 미완료 항목이 `장시간 idle variation 추가`인 것을 확인했다.
+- 장시간 무입력 상태에서는 `groom`, `look`, `scan`, `tail` idle variation 가중치를 올리도록 `LONG_IDLE_VARIATION_IDS`와 배율 설정을 추가했다.
+- 사용자가 움직이지 않을 때 반응 변화는 다음 미완료 항목으로 남겼다.
