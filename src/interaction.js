@@ -4,6 +4,7 @@ const {
   CAT_POINTER_STATES,
   CAT_STATES,
   COY_CONFIG,
+  MOUSE_APPROACH_CONFIG,
   MOVEMENT_CONFIG,
   PETTING_CONFIG,
   PLAYFUL_CONFIG,
@@ -71,13 +72,46 @@ function setMousePosition(event) {
   behaviorState.lastInteractionTimestamp = Date.now();
   setCatUserIdle(false);
   updateMouseDistanceToCat();
+  updateMouseNearCatTimestamp();
 }
 
 function clearMousePosition() {
   mouseState.isInsideWindow = false;
   mouseState.distanceToCat = null;
   mouseState.lastTimestamp = null;
+  mouseState.nearCatSinceTimestamp = null;
   mouseState.speed = 0;
+}
+
+function getMouseReactionAwarenessDistance() {
+  return Math.max(
+    AFFECTIONATE_CONFIG.APPROACH_DISTANCE,
+    COY_CONFIG.AVOID_DISTANCE,
+    PLAYFUL_CONFIG.CHASE_DISTANCE,
+    SHORT_PAUSE_CONFIG.TRIGGER_DISTANCE,
+    STARTLED_CONFIG.APPROACH_DISTANCE
+  );
+}
+
+function updateMouseNearCatTimestamp() {
+  if (
+    mouseState.distanceToCat === null ||
+    mouseState.distanceToCat > getMouseReactionAwarenessDistance()
+  ) {
+    mouseState.nearCatSinceTimestamp = null;
+    return;
+  }
+
+  if (mouseState.nearCatSinceTimestamp === null) {
+    mouseState.nearCatSinceTimestamp = Date.now();
+  }
+}
+
+function hasMouseStayedNearCat() {
+  return (
+    mouseState.nearCatSinceTimestamp !== null &&
+    Date.now() - mouseState.nearCatSinceTimestamp >= MOUSE_APPROACH_CONFIG.REACTION_DELAY_MS
+  );
 }
 
 function getStartledSpeedThreshold() {
@@ -89,6 +123,7 @@ function shouldTriggerShortPause() {
 
   return (
     mouseState.distanceToCat !== null &&
+    hasMouseStayedNearCat() &&
     mouseState.distanceToCat <= SHORT_PAUSE_CONFIG.TRIGGER_DISTANCE &&
     mouseState.speed < getStartledSpeedThreshold() &&
     (catState === CAT_STATES.IDLE || catState === CAT_STATES.SLEEP) &&
@@ -242,6 +277,7 @@ function shouldTriggerAffectionateApproach(event) {
   return (
     isAffectionatePersonality() &&
     mouseState.distanceToCat !== null &&
+    hasMouseStayedNearCat() &&
     mouseState.distanceToCat <= AFFECTIONATE_CONFIG.APPROACH_DISTANCE &&
     mouseState.distanceToCat > AFFECTIONATE_CONFIG.COMFORT_DISTANCE &&
     mouseState.speed < getStartledSpeedThreshold() &&
@@ -297,6 +333,7 @@ function shouldTriggerCoyAvoid(event) {
   return (
     isCoyPersonality() &&
     mouseState.distanceToCat !== null &&
+    hasMouseStayedNearCat() &&
     mouseState.distanceToCat <= COY_CONFIG.AVOID_DISTANCE &&
     mouseState.speed < getStartledSpeedThreshold() &&
     event.timeStamp - reactionTimestamps.lastCoyAvoid >= COY_CONFIG.AVOID_COOLDOWN_MS &&
@@ -357,6 +394,7 @@ function shouldTriggerPlayfulChase(event) {
   return (
     isPlayfulPersonality() &&
     mouseState.distanceToCat !== null &&
+    hasMouseStayedNearCat() &&
     mouseState.distanceToCat <= PLAYFUL_CONFIG.CHASE_DISTANCE &&
     mouseState.speed >= getStartledSpeedThreshold() &&
     event.timeStamp - reactionTimestamps.lastPlayfulChase >= PLAYFUL_CONFIG.CHASE_COOLDOWN_MS &&
@@ -412,6 +450,7 @@ function updatePlayfulReaction(event) {
 function shouldTriggerStartledReaction() {
   return (
     mouseState.distanceToCat !== null &&
+    hasMouseStayedNearCat() &&
     mouseState.distanceToCat <= STARTLED_CONFIG.APPROACH_DISTANCE &&
     mouseState.speed >= getStartledSpeedThreshold() &&
     !pettingState.isDragging &&

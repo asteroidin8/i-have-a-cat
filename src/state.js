@@ -77,6 +77,7 @@ const mouseState = {
   distanceToCat: null,
   isInsideWindow: false,
   lastTimestamp: null,
+  nearCatSinceTimestamp: null,
   speed: 0,
 };
 
