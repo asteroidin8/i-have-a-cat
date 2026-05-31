@@ -361,6 +361,99 @@ const CAT_SPRITE_SHEETS = {
   },
 };
 
+const CAT_SPRITE_ANIMATION_IDS = {
+  IDLE: "idle",
+  RUB: "rub",
+  RUN: "run",
+  SLEEP: "sleep",
+  STARTLED: "startled",
+  WALK: "walk",
+  TURN: "turn",
+};
+
+const CAT_SPRITE_FRAME_TABLE = {
+  [CAT_STATES.IDLE]: {
+    [CAT_DIRECTIONS.RIGHT]: [
+      { x: 0, y: 0, durationMs: 600 },
+      { x: 1, y: 0, durationMs: 600 },
+    ],
+    [CAT_DIRECTIONS.LEFT]: [
+      { x: 0, y: 1, durationMs: 600 },
+      { x: 1, y: 1, durationMs: 600 },
+    ],
+  },
+  [CAT_STATES.WALK]: {
+    [CAT_DIRECTIONS.RIGHT]: [
+      { x: 0, y: 2, durationMs: 160 },
+      { x: 1, y: 2, durationMs: 160 },
+      { x: 2, y: 2, durationMs: 160 },
+      { x: 3, y: 2, durationMs: 160 },
+    ],
+    [CAT_DIRECTIONS.LEFT]: [
+      { x: 0, y: 3, durationMs: 160 },
+      { x: 1, y: 3, durationMs: 160 },
+      { x: 2, y: 3, durationMs: 160 },
+      { x: 3, y: 3, durationMs: 160 },
+    ],
+  },
+  [CAT_STATES.SLEEP]: {
+    [CAT_DIRECTIONS.RIGHT]: [
+      { x: 0, y: 4, durationMs: 900 },
+      { x: 1, y: 4, durationMs: 900 },
+      { x: 2, y: 4, durationMs: 900 },
+    ],
+    [CAT_DIRECTIONS.LEFT]: [
+      { x: 0, y: 5, durationMs: 900 },
+      { x: 1, y: 5, durationMs: 900 },
+      { x: 2, y: 5, durationMs: 900 },
+    ],
+  },
+  [CAT_STATES.RUB]: {
+    [CAT_DIRECTIONS.RIGHT]: [
+      { x: 4, y: 0, durationMs: 175 },
+      { x: 5, y: 0, durationMs: 175 },
+      { x: 6, y: 0, durationMs: 175 },
+      { x: 7, y: 0, durationMs: 175 },
+    ],
+    [CAT_DIRECTIONS.LEFT]: [
+      { x: 4, y: 1, durationMs: 175 },
+      { x: 5, y: 1, durationMs: 175 },
+      { x: 6, y: 1, durationMs: 175 },
+      { x: 7, y: 1, durationMs: 175 },
+    ],
+  },
+  [CAT_STATES.STARTLED]: {
+    [CAT_DIRECTIONS.RIGHT]: [
+      { x: 4, y: 2, durationMs: 95 },
+      { x: 5, y: 2, durationMs: 95 },
+      { x: 6, y: 2, durationMs: 95 },
+    ],
+    [CAT_DIRECTIONS.LEFT]: [
+      { x: 4, y: 3, durationMs: 95 },
+      { x: 5, y: 3, durationMs: 95 },
+      { x: 6, y: 3, durationMs: 95 },
+    ],
+  },
+  [CAT_STATES.RUN]: {
+    [CAT_DIRECTIONS.RIGHT]: [
+      { x: 4, y: 4, durationMs: 90 },
+      { x: 5, y: 4, durationMs: 90 },
+      { x: 6, y: 4, durationMs: 90 },
+      { x: 7, y: 4, durationMs: 90 },
+    ],
+    [CAT_DIRECTIONS.LEFT]: [
+      { x: 4, y: 5, durationMs: 90 },
+      { x: 5, y: 5, durationMs: 90 },
+      { x: 6, y: 5, durationMs: 90 },
+      { x: 7, y: 5, durationMs: 90 },
+    ],
+  },
+  [CAT_SPRITE_ANIMATION_IDS.TURN]: {
+    [CAT_DIRECTIONS.RIGHT]: [{ x: 0, y: 6, durationMs: 180 }],
+    [CAT_DIRECTIONS.LEFT]: [{ x: 1, y: 6, durationMs: 180 }],
+  },
+};
+
 const DEFAULT_CAT_RENDERER_ID = CAT_RENDERER_IDS.CSS_PIXEL;
 const DEFAULT_CAT_SPRITE_SHEET_ID = CAT_SPRITE_SHEET_IDS.BASE;
 
@@ -386,6 +479,8 @@ window.CatConfig = {
   CAT_POINTER_STATES,
   CAT_PROFILE_CONFIG,
   CAT_RENDERER_IDS,
+  CAT_SPRITE_ANIMATION_IDS,
+  CAT_SPRITE_FRAME_TABLE,
   CAT_SPRITE_SHEETS,
   CAT_SPRITE_SHEET_IDS,
   CAT_STATES,

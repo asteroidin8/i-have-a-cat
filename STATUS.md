@@ -513,3 +513,6 @@
 - `TASKS_STRUCTURAL.md` 기준 다음 미완료 항목이 `실제 sprite sheet 에셋 매핑 구조 설계`인 것을 확인했다.
 - sprite sheet renderer 전환을 위한 renderer id, 기본 sheet id, sheet asset manifest, frame 크기, sheet 행/열, 외형 variant 매핑 구조를 `src/config.js`에 추가했다.
 - 실제 sprite sheet 에셋 파일, 상태/방향/프레임별 좌표 테이블, 렌더러 전환 로직은 다음 작업으로 남겼다.
+- `TASKS_STRUCTURAL.md` 기준 다음 미완료 항목이 `상태/방향/프레임별 sprite 좌표 테이블 설계`인 것을 확인했다.
+- `idle`, `walk`, `sleep`, `rub`, `startled`, `run`, `turn` 상태의 방향별 sprite frame 좌표와 frame duration 테이블을 `src/config.js`에 추가했다.
+- 실제 sprite sheet 렌더링 적용, 에셋 파일 추가, CSS 배경 좌표 연결은 이번 작업 범위에서 제외했다.
