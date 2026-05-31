@@ -272,6 +272,32 @@ body {
   transform-origin: center;
 }
 
+.cat__sprite-frame {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 88px;
+  height: 56px;
+  background-image: var(--cat-sprite-sheet, none);
+  background-position: var(--cat-sprite-position, 0 0);
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.cat[data-cat-renderer="sprite-sheet"] .cat__sprite-frame {
+  display: block;
+}
+
+.cat[data-cat-renderer="sprite-sheet"] .cat__pixel,
+.cat[data-cat-renderer="sprite-sheet"] .cat__ear,
+.cat[data-cat-renderer="sprite-sheet"] .cat__body,
+.cat[data-cat-renderer="sprite-sheet"] .cat__chest,
+.cat[data-cat-renderer="sprite-sheet"] .cat__face,
+.cat[data-cat-renderer="sprite-sheet"] .cat__tail,
+.cat[data-cat-renderer="sprite-sheet"] .cat__paw {
+  display: none;
+}
+
 .cat__pixel {
   position: absolute;
   left: 0;
