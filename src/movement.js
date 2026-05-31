@@ -211,15 +211,26 @@ function getRandomWalkTransitionMs() {
 
 function getIdleBehaviorWeight(behavior) {
   const movement = getPersonalityMovement();
+  const isLongIdle =
+    Date.now() - behaviorState.lastInteractionTimestamp >= IDLE_BEHAVIOR_CONFIG.LONG_IDLE_SLEEP_MS;
   const sleepModifier = behavior.state === CAT_STATES.SLEEP ? movement.sleepWeight + 0.2 : 1;
   const repeatedModifier = behavior.id === behaviorState.lastIdleActionId ? 0.25 : 1;
-  const longIdleModifier =
-    Date.now() - behaviorState.lastInteractionTimestamp >=
-      IDLE_BEHAVIOR_CONFIG.LONG_IDLE_SLEEP_MS && behavior.state === CAT_STATES.SLEEP
+  const longIdleSleepModifier =
+    isLongIdle && behavior.state === CAT_STATES.SLEEP
       ? IDLE_BEHAVIOR_CONFIG.LONG_IDLE_SLEEP_WEIGHT_MULTIPLIER
       : 1;
+  const longIdleVariationModifier =
+    isLongIdle && IDLE_BEHAVIOR_CONFIG.LONG_IDLE_VARIATION_IDS.includes(behavior.id)
+      ? IDLE_BEHAVIOR_CONFIG.LONG_IDLE_VARIATION_WEIGHT_MULTIPLIER
+      : 1;
 
-  return behavior.weight * sleepModifier * repeatedModifier * longIdleModifier;
+  return (
+    behavior.weight *
+    sleepModifier *
+    repeatedModifier *
+    longIdleSleepModifier *
+    longIdleVariationModifier
+  );
 }
 
 function chooseIdleBehavior() {
