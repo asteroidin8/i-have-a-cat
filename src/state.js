@@ -18,6 +18,7 @@ const {
   PERSONALITY_IDS,
   SCREEN_AWARENESS_CONFIG,
   SOUND_CONFIG,
+  STATE_TRANSITION_CONFIG,
   clampValue,
 } = window.CatConfig;
 
@@ -56,6 +57,7 @@ const timers = {
   pause: null,
   playful: null,
   directedMovement: null,
+  stateTransition: null,
 };
 
 const reactionTimestamps = {
@@ -122,11 +124,25 @@ function setCatState(catState) {
     return;
   }
 
+  startStateTransition();
   elements.cat.dataset.catState = catState;
 
   if (catState !== CAT_STATES.IDLE && catState !== CAT_STATES.SLEEP) {
     setCatIdleAction("");
   }
+}
+
+function startStateTransition() {
+  window.clearTimeout(timers.stateTransition);
+  elements.cat.style.setProperty(
+    "--state-transition-duration",
+    `${STATE_TRANSITION_CONFIG.DURATION_MS}ms`
+  );
+  elements.cat.style.setProperty("--state-transition-easing", STATE_TRANSITION_CONFIG.EASING);
+  elements.cat.dataset.catStateTransition = "true";
+  timers.stateTransition = window.setTimeout(() => {
+    elements.cat.dataset.catStateTransition = "false";
+  }, STATE_TRANSITION_CONFIG.DURATION_MS);
 }
 
 function getCatState() {
@@ -397,6 +413,7 @@ function setInitialState() {
   elements.cat.dataset.catPointerState = CAT_POINTER_STATES.OUTSIDE;
   elements.cat.dataset.catPetting = "false";
   elements.cat.dataset.catScreenEdge = "none";
+  elements.cat.dataset.catStateTransition = "false";
 }
 
 function isAffectionatePersonality() {

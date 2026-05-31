@@ -516,3 +516,6 @@
 - `TASKS_STRUCTURAL.md` 기준 다음 미완료 항목이 `상태/방향/프레임별 sprite 좌표 테이블 설계`인 것을 확인했다.
 - `idle`, `walk`, `sleep`, `rub`, `startled`, `run`, `turn` 상태의 방향별 sprite frame 좌표와 frame duration 테이블을 `src/config.js`에 추가했다.
 - 실제 sprite sheet 렌더링 적용, 에셋 파일 추가, CSS 배경 좌표 연결은 이번 작업 범위에서 제외했다.
+- 사용자 요청에 따라 3차 MVP를 확인했고, 다음 미완료 항목이 `상태 전환 사이 easing 추가`인 것을 확인했다.
+- 상태 변경 시 `data-cat-state-transition`을 짧게 켜고, 스프라이트의 filter/opacity가 easing으로 완화되도록 `STATE_TRANSITION_CONFIG`와 CSS transition을 추가했다.
+- 행동 transition 전반 수정이나 연속 행동 반복 방지는 다음 미완료 항목으로 남겼다.

@@ -17,6 +17,8 @@
   --walk-duration: 0.64s;
   --move-duration: 1.2s;
   --move-easing: cubic-bezier(0.16, 0.86, 0.2, 1);
+  --state-transition-duration: 180ms;
+  --state-transition-easing: cubic-bezier(0.16, 0.86, 0.2, 1);
 }
 
 * {
@@ -270,6 +272,14 @@ body {
   width: 88px;
   height: 56px;
   transform-origin: center;
+  transition:
+    filter var(--state-transition-duration) var(--state-transition-easing),
+    opacity var(--state-transition-duration) var(--state-transition-easing);
+}
+
+.cat[data-cat-state-transition="true"] .cat__sprite {
+  filter: brightness(1.05);
+  opacity: 0.96;
 }
 
 .cat__sprite-frame {
