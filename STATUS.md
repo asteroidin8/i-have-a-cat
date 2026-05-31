@@ -525,3 +525,6 @@
 - `TASKS_MVP_3.md` 기준 다음 미완료 항목이 `연속 행동 반복 방지`인 것을 확인했다.
 - 최근 행동 종류를 `behaviorState`에 기록하고, 장난꾸러기 idle hop이 짧은 시간 안에 반복 선택되지 않도록 `RECENT_ACTION_REPEAT_COOLDOWN_MS`를 추가했다.
 - idle 감성 강화 항목은 다음 작업으로 남겼다.
+- `TASKS_MVP_3.md` 기준 다음 미완료 항목이 `짧은 눈 깜빡임 추가`인 것을 확인했다.
+- 현재 보이는 픽셀 눈 레이어인 `.cat__pixel--eye`에 짧게 눈을 감는 `cat-pixel-short-blink` 애니메이션을 추가했다.
+- 꼬리 흔들기 추가는 다음 미완료 항목으로 남겼다.
