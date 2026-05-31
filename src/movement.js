@@ -236,6 +236,13 @@ function getIdleBehaviorWeight(behavior) {
 }
 
 function chooseIdleBehavior() {
+  if (
+    elements.cat.dataset.catScreenEdge !== "none" &&
+    isChanceSuccessful(IDLE_BEHAVIOR_CONFIG.EDGE_REST_CHANCE)
+  ) {
+    return IDLE_BEHAVIOR_CONFIG.TABLE.find((behavior) => behavior.id === IDLE_ACTION_IDS.CURL);
+  }
+
   const weightedBehaviors = IDLE_BEHAVIOR_CONFIG.TABLE.map((behavior) => ({
     ...behavior,
     computedWeight: getIdleBehaviorWeight(behavior),
