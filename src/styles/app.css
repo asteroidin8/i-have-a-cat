@@ -833,6 +833,10 @@ body {
   transform: translateY(1px);
 }
 
+.cat[data-cat-user-idle="true"][data-cat-gaze="none"] .cat__pixel--eye {
+  transform: translateY(2px);
+}
+
 .cat[data-cat-screen-edge="left"][data-cat-gaze="none"] .cat__pixel--eye {
   transform: translateX(2px);
 }

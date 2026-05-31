@@ -40,6 +40,7 @@ const {
   setCatPausing,
   setCatPointerState,
   setCatState,
+  setCatUserIdle,
   setMouseEventPassThrough,
   updateMouseDistanceToCat,
 } = window.CatState;
@@ -68,6 +69,7 @@ function setMousePosition(event) {
   mouseState.isInsideWindow = true;
   mouseState.lastTimestamp = event.timeStamp;
   behaviorState.lastInteractionTimestamp = Date.now();
+  setCatUserIdle(false);
   updateMouseDistanceToCat();
 }
 

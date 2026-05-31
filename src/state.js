@@ -176,6 +176,10 @@ function setCatPointerState(pointerState) {
   elements.cat.dataset.catPointerState = pointerState;
 }
 
+function setCatUserIdle(isUserIdle) {
+  elements.cat.dataset.catUserIdle = String(isUserIdle);
+}
+
 function setCatHesitating(isHesitating) {
   elements.cat.dataset.catHesitating = String(isHesitating);
 }
@@ -416,6 +420,7 @@ function setInitialState() {
   elements.cat.dataset.catPetting = "false";
   elements.cat.dataset.catScreenEdge = "none";
   elements.cat.dataset.catStateTransition = "false";
+  elements.cat.dataset.catUserIdle = "false";
 }
 
 function isAffectionatePersonality() {
@@ -481,6 +486,7 @@ window.CatState = {
   setCatPointerState,
   setSoundEnabled,
   setStartAtLogin,
+  setCatUserIdle,
   setVolume,
   updateMouseDistanceToCat,
 };

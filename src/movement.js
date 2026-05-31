@@ -8,6 +8,7 @@ const {
   MOVEMENT_CONFIG,
   PLAYFUL_CONFIG,
   TIMID_CONFIG,
+  USER_INACTIVITY_REACTION_CONFIG,
   clampValue,
   isChanceSuccessful,
 } = window.CatConfig;
@@ -29,6 +30,7 @@ const {
   setCatHesitating,
   setCatIdleAction,
   setCatState,
+  setCatUserIdle,
   updateMouseDistanceToCat,
 } = window.CatState;
 
@@ -265,6 +267,9 @@ function applyIdleBehavior() {
   rememberBehaviorKind(BEHAVIOR_KIND_IDS.IDLE);
   behaviorState.lastIdleActionId = behavior.id;
   behaviorState.lastIdleActionTimestamp = Date.now();
+  setCatUserIdle(
+    Date.now() - behaviorState.lastInteractionTimestamp >= USER_INACTIVITY_REACTION_CONFIG.IDLE_MS
+  );
   setCatIdleAction(behavior.id);
   setCatState(behavior.state);
 }
