@@ -779,6 +779,10 @@ body {
   animation: cat-look-around 2.4s steps(3, end) infinite;
 }
 
+.cat[data-cat-state="idle"][data-cat-idle-action="look"] .cat__pixel--eye {
+  animation: cat-look-eyes 2.4s steps(3, end) infinite;
+}
+
 .cat[data-cat-state="idle"][data-cat-idle-action="scan"] .cat__sprite {
   animation: cat-scan-around 3.4s steps(5, end) infinite;
 }
@@ -1352,6 +1356,21 @@ body {
 }
 
 @keyframes cat-look-around {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  33% {
+    transform: translateX(-2px);
+  }
+
+  66% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes cat-look-eyes {
   0%,
   100% {
     transform: translateX(0);
