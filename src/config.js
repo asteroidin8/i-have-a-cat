@@ -290,6 +290,7 @@ const CAT_PERSONALITIES = {
     },
     interaction: {
       approachChance: 0.7,
+      reactionDistanceMultiplier: 1.18,
       rubChance: 0.85,
       runChance: 0.1,
       startledSensitivity: 0.75,
@@ -307,6 +308,7 @@ const CAT_PERSONALITIES = {
     },
     interaction: {
       approachChance: 0.25,
+      reactionDistanceMultiplier: 0.95,
       rubChance: 0.45,
       runChance: 0.35,
       startledSensitivity: 1,
@@ -324,6 +326,7 @@ const CAT_PERSONALITIES = {
     },
     interaction: {
       approachChance: 0.1,
+      reactionDistanceMultiplier: 1.22,
       rubChance: 0.35,
       runChance: 0.8,
       startledSensitivity: 1.35,
@@ -341,6 +344,7 @@ const CAT_PERSONALITIES = {
     },
     interaction: {
       approachChance: 0.25,
+      reactionDistanceMultiplier: 0.82,
       rubChance: 0.65,
       runChance: 0.08,
       startledSensitivity: 0.6,
@@ -358,6 +362,7 @@ const CAT_PERSONALITIES = {
     },
     interaction: {
       approachChance: 0.6,
+      reactionDistanceMultiplier: 1.1,
       rubChance: 0.55,
       runChance: 0.2,
       startledSensitivity: 0.95,
