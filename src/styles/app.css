@@ -783,6 +783,10 @@ body {
   animation: cat-scan-eyes 3.4s steps(5, end) infinite;
 }
 
+.cat[data-cat-state="idle"][data-cat-idle-action="sit"] .cat__sprite {
+  animation: cat-sit-still 3.6s steps(2, end) infinite;
+}
+
 .cat[data-cat-state="idle"][data-cat-idle-action="scratch"] .cat__sprite {
   animation: cat-scratch-idle 0.7s steps(4, end) infinite;
 }
@@ -1384,6 +1388,17 @@ body {
 
   80% {
     transform: translateX(2px);
+  }
+}
+
+@keyframes cat-sit-still {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(1px);
   }
 }
 
