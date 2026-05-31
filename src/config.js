@@ -331,6 +331,39 @@ const CAT_PERSONALITIES = {
   },
 };
 
+const CAT_RENDERER_IDS = {
+  CSS_PIXEL: "css-pixel",
+  SPRITE_SHEET: "sprite-sheet",
+};
+
+const CAT_SPRITE_SHEET_IDS = {
+  BASE: "base",
+};
+
+const CAT_SPRITE_SHEETS = {
+  [CAT_SPRITE_SHEET_IDS.BASE]: {
+    id: CAT_SPRITE_SHEET_IDS.BASE,
+    rendererId: CAT_RENDERER_IDS.SPRITE_SHEET,
+    src: "./src/assets/sprites/cat-base.png",
+    frame: {
+      width: 88,
+      height: 56,
+    },
+    sheet: {
+      columns: 8,
+      rows: 8,
+    },
+    variants: {
+      breeds: Object.values(CAT_BREED_IDS),
+      eyeColors: Object.values(CAT_EYE_COLOR_IDS),
+      furColors: Object.values(CAT_FUR_COLOR_IDS),
+    },
+  },
+};
+
+const DEFAULT_CAT_RENDERER_ID = CAT_RENDERER_IDS.CSS_PIXEL;
+const DEFAULT_CAT_SPRITE_SHEET_ID = CAT_SPRITE_SHEET_IDS.BASE;
+
 function clampValue(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
@@ -352,12 +385,17 @@ window.CatConfig = {
   CAT_PERSONALITIES,
   CAT_POINTER_STATES,
   CAT_PROFILE_CONFIG,
+  CAT_RENDERER_IDS,
+  CAT_SPRITE_SHEETS,
+  CAT_SPRITE_SHEET_IDS,
   CAT_STATES,
   CORNER_PREFERENCE_CONFIG,
   COY_CONFIG,
   DEFAULT_BREED_ID,
   DEFAULT_EYE_COLOR_ID,
   DEFAULT_FUR_COLOR_ID,
+  DEFAULT_CAT_RENDERER_ID,
+  DEFAULT_CAT_SPRITE_SHEET_ID,
   DEFAULT_PERSONALITY_ID,
   IDLE_ACTION_IDS,
   IDLE_BEHAVIOR_CONFIG,

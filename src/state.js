@@ -6,6 +6,7 @@ const {
   CAT_FUR_COLORS,
   CAT_PERSONALITIES,
   CAT_POINTER_STATES,
+  DEFAULT_CAT_RENDERER_ID,
   CAT_STATES,
   DEFAULT_BREED_ID,
   DEFAULT_EYE_COLOR_ID,
@@ -389,7 +390,7 @@ function setInitialState() {
   setSoundEnabled(catProfile.soundEnabled);
   setVolume(catProfile.volume);
   setStartAtLogin(catProfile.startAtLogin);
-  elements.cat.dataset.catRenderer = "css-pixel";
+  elements.cat.dataset.catRenderer = DEFAULT_CAT_RENDERER_ID;
   elements.cat.dataset.catGaze = "none";
   elements.cat.dataset.catHesitating = "false";
   elements.cat.dataset.catPausing = "false";
