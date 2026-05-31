@@ -1,0 +1,44 @@
+{
+  "id": "orange-tabby-minimal",
+  "image": "./orange-tabby-minimal-sheet.png",
+  "frameWidth": 362,
+  "frameHeight": 724,
+  "frames": [
+    {
+      "id": "idle-right",
+      "index": 0,
+      "state": "idle",
+      "direction": "right"
+    },
+    {
+      "id": "walk-right-a",
+      "index": 1,
+      "state": "walk",
+      "direction": "right"
+    },
+    {
+      "id": "walk-right-b",
+      "index": 2,
+      "state": "walk",
+      "direction": "right"
+    },
+    {
+      "id": "sit-front",
+      "index": 3,
+      "state": "idle",
+      "direction": "front"
+    },
+    {
+      "id": "sleep-curl",
+      "index": 4,
+      "state": "sleep",
+      "direction": "right"
+    },
+    {
+      "id": "startled-right",
+      "index": 5,
+      "state": "startled",
+      "direction": "right"
+    }
+  ]
+}
