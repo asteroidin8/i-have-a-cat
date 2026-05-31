@@ -2,6 +2,7 @@ const {
   CAT_DIRECTIONS,
   CAT_STATES,
   CORNER_PREFERENCE_CONFIG,
+  BEHAVIOR_KIND_IDS,
   IDLE_ACTION_IDS,
   IDLE_BEHAVIOR_CONFIG,
   MOVEMENT_CONFIG,
@@ -186,6 +187,19 @@ function shouldMoveRandomly() {
   return isChanceSuccessful(walkChance);
 }
 
+function isRecentBehaviorKind(behaviorKind) {
+  return (
+    behaviorState.lastBehaviorKind === behaviorKind &&
+    Date.now() - behaviorState.lastBehaviorKindTimestamp <
+      IDLE_BEHAVIOR_CONFIG.RECENT_ACTION_REPEAT_COOLDOWN_MS
+  );
+}
+
+function rememberBehaviorKind(behaviorKind) {
+  behaviorState.lastBehaviorKind = behaviorKind;
+  behaviorState.lastBehaviorKindTimestamp = Date.now();
+}
+
 function getRandomWalkTransitionMs() {
   return (
     MOVEMENT_CONFIG.TRANSITION_MS *
@@ -237,6 +251,7 @@ function applyIdleBehavior() {
 
   const behavior = chooseIdleBehavior();
 
+  rememberBehaviorKind(BEHAVIOR_KIND_IDS.IDLE);
   behaviorState.lastIdleActionId = behavior.id;
   behaviorState.lastIdleActionTimestamp = Date.now();
   setCatIdleAction(behavior.id);
@@ -249,6 +264,7 @@ function triggerPlayfulIdleHop() {
   clearPendingDirectedMovement();
   setCatHesitating(false);
   window.clearTimeout(timers.playful);
+  rememberBehaviorKind(BEHAVIOR_KIND_IDS.PLAYFUL_HOP);
   const hopDirection = Math.random() < 0.5 ? CAT_DIRECTIONS.LEFT : CAT_DIRECTIONS.RIGHT;
   const turnDelay =
     elements.cat.dataset.catDirection === hopDirection
@@ -288,7 +304,11 @@ function moveCatToRandomPosition() {
   }
 
   if (!shouldMoveRandomly()) {
-    if (isPlayfulPersonality() && isChanceSuccessful(PLAYFUL_CONFIG.IDLE_HOP_CHANCE)) {
+    if (
+      isPlayfulPersonality() &&
+      !isRecentBehaviorKind(BEHAVIOR_KIND_IDS.PLAYFUL_HOP) &&
+      isChanceSuccessful(PLAYFUL_CONFIG.IDLE_HOP_CHANCE)
+    ) {
       triggerPlayfulIdleHop();
       return;
     }
@@ -305,6 +325,7 @@ function moveCatToRandomPosition() {
   elements.cat.style.setProperty("--move-duration", `${movementTransitionMs}ms`);
   const nextPosition = getShortStepPosition(getPersonalityRandomPosition());
 
+  rememberBehaviorKind(BEHAVIOR_KIND_IDS.WALK);
   setCatHesitating(true);
   setCatIdleAction(IDLE_ACTION_IDS.SCAN);
   setCatState(CAT_STATES.IDLE);

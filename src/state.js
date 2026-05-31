@@ -102,6 +102,8 @@ const windowResizeState = {
 };
 
 const behaviorState = {
+  lastBehaviorKind: null,
+  lastBehaviorKindTimestamp: 0,
   lastIdleActionId: null,
   lastIdleActionTimestamp: 0,
   lastInteractionTimestamp: Date.now(),
