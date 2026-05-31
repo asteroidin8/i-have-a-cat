@@ -606,7 +606,9 @@ function registerPointerTracking() {
   window.addEventListener("mouseleave", () => {
     clearMousePosition();
     stopPettingDrag();
-    setMouseEventPassThrough(true);
+    if (!isSetupOpen()) {
+      setMouseEventPassThrough(true);
+    }
     setCatPointerState(CAT_POINTER_STATES.OUTSIDE);
   });
 }
