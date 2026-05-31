@@ -12,6 +12,9 @@
   --panel-shadow: rgba(31, 31, 31, 0.2);
   --idle-duration: 2.4s;
   --rub-duration: 0.7s;
+  --rub-body-sway: 1px;
+  --rub-lift-distance: 1px;
+  --rub-slide-distance: 2px;
   --run-duration: 0.36s;
   --startled-duration: 0.28s;
   --walk-duration: 0.64s;
@@ -709,11 +712,11 @@ body {
 }
 
 .cat[data-cat-state="rub"] {
-  animation: cat-rub-body var(--rub-duration) steps(4, end) infinite;
+  animation: cat-rub-body var(--rub-duration) ease-in-out infinite;
 }
 
 .cat[data-cat-state="rub"] .cat__tail {
-  animation: cat-rub-tail var(--rub-duration) steps(2, end) infinite;
+  animation: cat-rub-tail var(--rub-duration) ease-in-out infinite;
 }
 
 .cat[data-cat-state="rub"] .cat__eye {
@@ -855,11 +858,11 @@ body {
 }
 
 .cat[data-cat-pet-direction="left"][data-cat-state="rub"] .cat__sprite {
-  animation: cat-rub-left var(--rub-duration) steps(4, end) infinite;
+  animation: cat-rub-left var(--rub-duration) ease-in-out infinite;
 }
 
 .cat[data-cat-pet-direction="right"][data-cat-state="rub"] .cat__sprite {
-  animation: cat-rub-right var(--rub-duration) steps(4, end) infinite;
+  animation: cat-rub-right var(--rub-duration) ease-in-out infinite;
 }
 
 .cat[data-cat-state="run"] .cat__paw--front {
@@ -1249,49 +1252,55 @@ body {
 @keyframes cat-rub-body {
   0%,
   100% {
-    transform: translate(calc(-50% - 2px), -50%);
+    transform: translate(calc(-50% - var(--rub-body-sway)), -50%);
   }
 
   50% {
-    transform: translate(calc(-50% + 2px), calc(-50% - 2px));
+    transform: translate(calc(-50% + var(--rub-body-sway)), calc(-50% - var(--rub-lift-distance)));
   }
 }
 
 @keyframes cat-rub-left {
   0%,
   100% {
-    transform: translate(-1px, 0);
+    transform: translate(calc(var(--rub-slide-distance) * -0.5), 0);
   }
 
   25% {
-    transform: translate(-3px, 1px);
+    transform: translate(calc(var(--rub-slide-distance) * -1), var(--rub-lift-distance));
   }
 
   50% {
-    transform: translate(-1px, 0);
+    transform: translate(calc(var(--rub-slide-distance) * -0.5), 0);
   }
 
   75% {
-    transform: translate(-2px, -1px);
+    transform: translate(
+      calc(var(--rub-slide-distance) * -0.75),
+      calc(var(--rub-lift-distance) * -1)
+    );
   }
 }
 
 @keyframes cat-rub-right {
   0%,
   100% {
-    transform: translate(1px, 0);
+    transform: translate(calc(var(--rub-slide-distance) * 0.5), 0);
   }
 
   25% {
-    transform: translate(3px, 1px);
+    transform: translate(var(--rub-slide-distance), var(--rub-lift-distance));
   }
 
   50% {
-    transform: translate(1px, 0);
+    transform: translate(calc(var(--rub-slide-distance) * 0.5), 0);
   }
 
   75% {
-    transform: translate(2px, -1px);
+    transform: translate(
+      calc(var(--rub-slide-distance) * 0.75),
+      calc(var(--rub-lift-distance) * -1)
+    );
   }
 }
 

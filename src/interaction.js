@@ -272,8 +272,8 @@ function getRubNudgePosition() {
   const directionMultiplier = elements.cat.dataset.catPetDirection === "left" ? -1 : 1;
 
   return {
-    x: elements.cat.offsetLeft + directionMultiplier * 10,
-    y: elements.cat.offsetTop + 2,
+    x: elements.cat.offsetLeft + directionMultiplier * PETTING_CONFIG.RUB_NUDGE_DISTANCE,
+    y: elements.cat.offsetTop + PETTING_CONFIG.RUB_NUDGE_LIFT,
   };
 }
 
