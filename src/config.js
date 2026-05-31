@@ -153,6 +153,10 @@ const MOUSE_GAZE_CONFIG = {
   AXIS_DEAD_ZONE: 18,
 };
 
+const USER_INACTIVITY_REACTION_CONFIG = {
+  IDLE_MS: 1000 * 60 * 2,
+};
+
 const SHORT_PAUSE_CONFIG = {
   CHANCE: 0.35,
   COOLDOWN_MS: 7000,
@@ -532,6 +536,7 @@ window.CatConfig = {
   STARTLED_CONFIG,
   STORAGE_CONFIG,
   TIMID_CONFIG,
+  USER_INACTIVITY_REACTION_CONFIG,
   clampValue,
   isChanceSuccessful,
 };
