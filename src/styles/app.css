@@ -631,6 +631,10 @@ body {
   animation: cat-idle-blink 4.8s steps(1, end) infinite;
 }
 
+.cat[data-cat-state="idle"] .cat__pixel--eye {
+  animation: cat-pixel-short-blink 3.8s steps(1, end) infinite;
+}
+
 .cat[data-cat-state="idle"] .cat__tail {
   animation: cat-idle-tail 3.2s steps(2, end) infinite;
 }
@@ -1047,6 +1051,22 @@ body {
 
   50% {
     transform: translateY(-4px);
+  }
+}
+
+@keyframes cat-pixel-short-blink {
+  0%,
+  86%,
+  100% {
+    box-shadow:
+      20px 20px 0 var(--cat-eye),
+      44px 20px 0 var(--cat-eye);
+  }
+
+  90% {
+    box-shadow:
+      20px 24px 0 var(--cat-line),
+      44px 24px 0 var(--cat-line);
   }
 }
 
