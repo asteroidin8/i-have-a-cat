@@ -89,12 +89,32 @@ function getMouseReactionAwarenessDistance() {
     getPersonalityReactionDistance(COY_CONFIG.AVOID_DISTANCE),
     getPersonalityReactionDistance(PLAYFUL_CONFIG.CHASE_DISTANCE),
     getPersonalityReactionDistance(SHORT_PAUSE_CONFIG.TRIGGER_DISTANCE),
-    getPersonalityReactionDistance(STARTLED_CONFIG.APPROACH_DISTANCE)
+    getStartledReactionDistance()
   );
 }
 
 function getPersonalityReactionDistance(baseDistance) {
   return baseDistance * getPersonalityInteraction().reactionDistanceMultiplier;
+}
+
+function isFastMouseMovement() {
+  return mouseState.speed >= getStartledSpeedThreshold() * STARTLED_CONFIG.FAST_SPEED_MULTIPLIER;
+}
+
+function getStartledReactionDistance() {
+  const fastDistanceMultiplier = isFastMouseMovement()
+    ? STARTLED_CONFIG.FAST_APPROACH_DISTANCE_MULTIPLIER
+    : 1;
+
+  return getPersonalityReactionDistance(STARTLED_CONFIG.APPROACH_DISTANCE) * fastDistanceMultiplier;
+}
+
+function getStartledReactionChance() {
+  const baseChance =
+    getPersonalityInteraction().runChance * STARTLED_CONFIG.RUN_REACTION_MULTIPLIER;
+  const fastBonus = isFastMouseMovement() ? STARTLED_CONFIG.FAST_RUN_CHANCE_BONUS : 0;
+
+  return window.CatConfig.clampValue(baseChance + fastBonus, 0, 1);
 }
 
 function updateMouseNearCatTimestamp() {
@@ -457,16 +477,14 @@ function updatePlayfulReaction(event) {
 function shouldTriggerStartledReaction() {
   return (
     mouseState.distanceToCat !== null &&
-    hasMouseStayedNearCat() &&
-    mouseState.distanceToCat <= getPersonalityReactionDistance(STARTLED_CONFIG.APPROACH_DISTANCE) &&
+    (hasMouseStayedNearCat() || isFastMouseMovement()) &&
+    mouseState.distanceToCat <= getStartledReactionDistance() &&
     mouseState.speed >= getStartledSpeedThreshold() &&
     !pettingState.isDragging &&
     !pettingState.isPetting &&
     !isCatReacting() &&
     Date.now() - reactionTimestamps.lastRunReaction >= STARTLED_CONFIG.RUN_COOLDOWN_MS &&
-    isChanceSuccessful(
-      getPersonalityInteraction().runChance * STARTLED_CONFIG.RUN_REACTION_MULTIPLIER
-    )
+    isChanceSuccessful(getStartledReactionChance())
   );
 }
 
