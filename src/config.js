@@ -28,6 +28,12 @@ const IDLE_ACTION_IDS = {
   TAIL: "tail",
 };
 
+const BEHAVIOR_KIND_IDS = {
+  IDLE: "idle",
+  PLAYFUL_HOP: "playful-hop",
+  WALK: "walk",
+};
+
 const CAT_DIRECTIONS = {
   LEFT: "left",
   RIGHT: "right",
@@ -116,6 +122,7 @@ const PLAYFUL_CONFIG = {
 const IDLE_BEHAVIOR_CONFIG = {
   COOLDOWN_MS: 1800,
   LONG_IDLE_SLEEP_MS: 1000 * 60 * 8,
+  RECENT_ACTION_REPEAT_COOLDOWN_MS: 9000,
   TABLE: [
     { id: IDLE_ACTION_IDS.SIT, state: CAT_STATES.IDLE, weight: 1.6 },
     { id: IDLE_ACTION_IDS.CURL, state: CAT_STATES.SLEEP, weight: 0.7 },
@@ -475,6 +482,7 @@ function isChanceSuccessful(chance) {
 window.CatConfig = {
   AFFECTIONATE_CONFIG,
   APP_STATES,
+  BEHAVIOR_KIND_IDS,
   CAT_BREEDS,
   CAT_BREED_IDS,
   CAT_DIRECTIONS,
