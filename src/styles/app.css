@@ -792,7 +792,8 @@ body {
 }
 
 .cat[data-cat-state="idle"][data-cat-idle-action="tail"] .cat__sprite {
-  animation: cat-tail-idle 1.6s steps(3, end) infinite;
+  animation: cat-tail-idle 1.8s steps(4, end) infinite;
+  transform-origin: 18px 36px;
 }
 
 .cat[data-cat-gaze="left"] .cat__pixel--eye {
@@ -1416,11 +1417,19 @@ body {
 @keyframes cat-tail-idle {
   0%,
   100% {
-    transform: translateX(0);
+    transform: translateX(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateX(1px) rotate(1deg);
   }
 
   50% {
-    transform: translateX(2px);
+    transform: translateX(2px) rotate(0deg);
+  }
+
+  75% {
+    transform: translateX(1px) rotate(-1deg);
   }
 }
 
