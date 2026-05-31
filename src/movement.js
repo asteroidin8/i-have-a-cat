@@ -216,7 +216,7 @@ function getIdleBehaviorWeight(behavior) {
   const longIdleModifier =
     Date.now() - behaviorState.lastInteractionTimestamp >=
       IDLE_BEHAVIOR_CONFIG.LONG_IDLE_SLEEP_MS && behavior.state === CAT_STATES.SLEEP
-      ? 2.6
+      ? IDLE_BEHAVIOR_CONFIG.LONG_IDLE_SLEEP_WEIGHT_MULTIPLIER
       : 1;
 
   return behavior.weight * sleepModifier * repeatedModifier * longIdleModifier;
