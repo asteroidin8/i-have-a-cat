@@ -186,6 +186,15 @@ function shouldMoveRandomly() {
   return isChanceSuccessful(walkChance);
 }
 
+function getRandomWalkTransitionMs() {
+  return (
+    MOVEMENT_CONFIG.TRANSITION_MS *
+    (MOVEMENT_CONFIG.TRANSITION_RANDOM_MIN +
+      Math.random() *
+        (MOVEMENT_CONFIG.TRANSITION_RANDOM_MAX - MOVEMENT_CONFIG.TRANSITION_RANDOM_MIN))
+  );
+}
+
 function getIdleBehaviorWeight(behavior) {
   const movement = getPersonalityMovement();
   const sleepModifier = behavior.state === CAT_STATES.SLEEP ? movement.sleepWeight + 0.2 : 1;
@@ -291,10 +300,9 @@ function moveCatToRandomPosition() {
   window.clearTimeout(timers.movement);
   window.clearTimeout(timers.hesitation);
   clearPendingDirectedMovement();
-  elements.cat.style.setProperty(
-    "--move-duration",
-    `${MOVEMENT_CONFIG.TRANSITION_MS * (0.85 + Math.random() * 0.35)}ms`
-  );
+  const movementTransitionMs = getRandomWalkTransitionMs();
+
+  elements.cat.style.setProperty("--move-duration", `${movementTransitionMs}ms`);
   const nextPosition = getShortStepPosition(getPersonalityRandomPosition());
 
   setCatHesitating(true);
@@ -310,7 +318,7 @@ function moveCatToRandomPosition() {
     timers.movement = window.setTimeout(() => {
       reactionTimestamps.movementRestUntil = Date.now() + MOVEMENT_CONFIG.POST_WALK_REST_MS;
       applyIdleBehavior();
-    }, turnDelay + MOVEMENT_CONFIG.TRANSITION_MS);
+    }, turnDelay + movementTransitionMs);
   }, MOVEMENT_CONFIG.HESITATION_MS);
 }
 

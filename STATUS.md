@@ -519,3 +519,6 @@
 - 사용자 요청에 따라 3차 MVP를 확인했고, 다음 미완료 항목이 `상태 전환 사이 easing 추가`인 것을 확인했다.
 - 상태 변경 시 `data-cat-state-transition`을 짧게 켜고, 스프라이트의 filter/opacity가 easing으로 완화되도록 `STATE_TRANSITION_CONFIG`와 CSS transition을 추가했다.
 - 행동 transition 전반 수정이나 연속 행동 반복 방지는 다음 미완료 항목으로 남겼다.
+- `TASKS_MVP_3.md` 기준 다음 미완료 항목이 `행동 transition 부드럽게 수정`인 것을 확인했다.
+- 랜덤 이동의 실제 CSS 이동 시간과 이동 종료 후 idle 전환 타이머가 어긋나지 않도록 랜덤 transition 시간을 변수로 보관해 같은 값으로 상태 전환 타이밍을 맞췄다.
+- 연속 행동 반복 방지는 다음 미완료 항목으로 남겼다.
