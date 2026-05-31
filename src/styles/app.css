@@ -737,6 +737,10 @@ body {
   transform: translateY(4px);
 }
 
+.cat[data-cat-state="sleep"][data-cat-idle-action="curl"] .cat__sprite {
+  animation: cat-doze-curl 3.2s steps(3, end) infinite;
+}
+
 .cat[data-cat-state="startled"] {
   animation: cat-startled-body var(--startled-duration) steps(3, end) infinite;
 }
@@ -1333,6 +1337,17 @@ body {
 
   50% {
     transform: translateY(4px) scaleX(0.86);
+  }
+}
+
+@keyframes cat-doze-curl {
+  0%,
+  100% {
+    transform: translateY(4px) scaleX(0.94);
+  }
+
+  50% {
+    transform: translateY(5px) scaleX(0.9);
   }
 }
 
